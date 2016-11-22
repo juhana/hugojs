@@ -30,21 +30,19 @@ chapter) so the build scripts or any special setup isn't strictly necessary.
 The repository includes all necessary JavaScript files except he.js which is the
 official Hugo interpreter engine that has been compiled from C to JavaScript
 with [Emscripten](http://emscripten.org/). If you don't need to modify the
-engine, you can download the compiled he.js and he.js.mem files from the 
-interpreter page and place them in the www/play directory.
+engine, you can download the compiled [he.js](http://textadventures.online/play/he.js) 
+and [he.js.mem](http://textadventures.online/play/he.js.mem) files and place them 
+in the www/play directory.
 
-In the he directory, [hejs.c](he/hejs.c) contains most of HugoJS-specific C code. 
-It's mainly responsible for communication between the engine and the user
-interface. C project setup is at the start of [heheader.h](he/heheader.h). 
-There are other minor changes here and there in other C files. The changes are 
-contained in `#if defined __EMSCRIPTEN__` directives.
+In the repository's "he" directory, [hejs.c](he/hejs.c) contains most of 
+HugoJS-specific C code. It's mainly responsible for communication between the 
+engine and the user interface. C project setup is at the start of 
+[heheader.h](he/heheader.h). There are other minor changes here and there in 
+other C files. The changes are contained in `#if defined __EMSCRIPTEN__` directives.
 
 If you need to edit and compile the C engine, you'll need to 
 [install Emscripten](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 The npm script `npm run compile` transpiles the C code into JavaScipt. 
-
-If you don't need to touch the engine, you can download the compiled he.js file
-from the interpreter page and place it in the www/play directory.
 
 
 ### User interface
