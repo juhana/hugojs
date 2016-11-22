@@ -1,0 +1,24 @@
+{
+  "name": "hugojs",
+  "version": "1.0.0",
+  "description": "HugoJS online Hugo interpreter",
+  "scripts": {
+    "build": "rm -rf release; mkdir -p release/www/play; cp www/* release/www/; cp www/play/* release/www/play/; uglifyjs www/play/utility/fastclick.js www/play/ui/{utility,output,input,file}.js -o release/www/play/ui.js -c --screw-ie8; zip -j release/hugojs.zip release/www/play/*; cp www/play/utility/proxy.php release/www/play",
+    "compile": "cd he; emmake make; emcc -DGCC_UNIX -s ASYNCIFY=1 -s NO_EXIT_RUNTIME=1 -O3 -o ../www/play/he.js he.o hejs.o heexpr.o hemisc.o heobject.o heparse.o heres.o herun.o heset.o stringfn.o; rm *.o he; cd ..",
+    "lint": "jshint www/play/ui/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juhana/hugojs.git"
+  },
+  "author": "Juhana Leinonen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juhana/hugojs/issues"
+  },
+  "homepage": "https://github.com/juhana/hugojs#readme",
+  "devDependencies": {
+    "jshint": "^2.9.3",
+    "uglify-js": "^2.7.3"
+  }
+}

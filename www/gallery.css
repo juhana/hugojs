@@ -1,0 +1,9 @@
+#link {
+    margin-top: 1em;
+}
+
+@media (min-width: 768px) {
+    .action-buttons {
+        margin-top: 40px;
+    }
+}
