@@ -982,3 +982,7 @@ void EMSCRIPTEN_KEEPALIVE hugojs_set_colors(int new_fcolor, int new_bgcolor) {
     fcolor = new_fcolor;
     bgcolor = new_bgcolor;
 }
+
+char* EMSCRIPTEN_KEEPALIVE hugojs_get_dictionary_word(unsigned int dict_address) {
+    return GetWord(dict_address);
+}

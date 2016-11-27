@@ -1,0 +1,279 @@
+constant CHECK_FILE "OpCheck"
+constant CONTROL_FILE "OpCtlAPI"
+
+constant OP_IS_OPCODE_AVAILABLE 1
+constant OP_GET_VERSION 100
+constant OP_GET_OS 200 
+constant OP_ABORT 300
+constant OP_FADE_SCREEN 400
+constant OP_OPEN_URL 500
+constant OP_SET_FULLSCREEN 600
+constant OP_SET_CLIPBOARD 700
+constant OP_IS_MUSIC_PLAYING 800
+constant OP_IS_SAMPLE_PLAYING 900
+constant OP_IS_FLUID_LAYOUT 1000
+constant OP_SET_COLOR 1100
+constant OP_IS_FULLSCREEN 1200
+
+constant OS_UNKNOWN 0 
+constant OS_WINDOWS 1 
+constant OS_MACOSX 2
+constant OS_LINUX 3
+constant OS_IOS 4
+constant OS_ANDROID 5
+constant OS_BROWSER 6
+
+array color_text[7]
+
+routine check_availability( opcode )
+{
+    local is_available
+
+    writefile CONTROL_FILE
+    {
+        writeval OP_IS_OPCODE_AVAILABLE
+        writeval opcode
+    }
+
+    readfile CONTROL_FILE
+    {
+        is_available = readval
+    }
+
+    return is_available
+}
+
+routine print_availability( opcode )
+{
+    local is_available
+
+    is_available = check_availability( opcode )
+
+    if is_available
+    {
+        color 10
+        "supported";
+        color 16
+    }
+    else
+    {
+        color 12
+        "not supported";
+        color 16
+    }
+}
+
+routine set_color( num, r, g, b )
+{
+    writefile CONTROL_FILE
+    {
+        writeval OP_SET_COLOR
+        writeval num
+        writeval r
+        writeval g
+        writeval b
+    }
+
+    readfile CONTROL_FILE
+    {
+    }
+}
+
+routine Main 
+{ 
+    local support_test, val1, val2, val3
+
+    readfile CHECK_FILE
+    { 
+        support_test = readval
+    }
+
+    if support_test = 12121
+    { 
+        "Extra opcodes supported.\n"
+    } 
+    else 
+    { 
+        "Extra opcodes not supported."
+        pause 
+        quit 
+    }
+
+    "\BIndividual opcode support\b"
+
+    "\_100 GET_VERSION        ";
+    print_availability( OP_GET_VERSION )
+
+    if check_availability( OP_GET_VERSION )
+    {
+        writefile CONTROL_FILE
+        {
+            writeval OP_GET_VERSION
+        }
+
+        readfile CONTROL_FILE
+        {
+            val1 = readval
+            val2 = readval
+            val3 = readval
+        }
+
+        print " ("; number val1; "."; number val2; "."; number val3 ; ")";
+    }
+
+    "\n\_200 GET_OS             ";
+    print_availability( OP_GET_OS )
+
+    if check_availability( OP_GET_OS )
+    {
+        print " (";
+
+        writefile CONTROL_FILE
+        {
+            writeval OP_GET_OS
+        }
+
+        readfile CONTROL_FILE
+        {
+            val1 = readval
+        }
+
+        select val1
+            case OS_UNKNOWN
+                print "unknown";
+            case OS_WINDOWS
+                print "Windows";
+            case OS_MACOSX
+                print "Mac OS X";
+            case OS_LINUX
+                print "Linux";
+            case OS_IOS
+                print "iOS";
+            case OS_ANDROID
+                print "Android";
+            case OS_BROWSER
+                print "Browser";
+
+        print ")";
+    }
+
+    "\n\_300 ABORT              ";
+    print_availability( OP_ABORT )
+    "\n\_400 FADE_SCREEN        ";
+    print_availability( OP_FADE_SCREEN )
+    "\n\_500 OPEN_URL           ";
+    print_availability( OP_OPEN_URL )
+    "\n\_600 SET_FULLSCREEN     ";
+    print_availability( OP_SET_FULLSCREEN )
+    "\n\_700 SET_CLIPBOARD      ";
+    print_availability( OP_SET_CLIPBOARD )
+    "\n\_800 IS_MUSIC_PLAYING   ";
+    print_availability( OP_IS_MUSIC_PLAYING )
+    "\n\_900 IS_SAMPLE_PLAYING  ";
+    print_availability( OP_IS_SAMPLE_PLAYING )
+    "\n1000 IS_FLUID_LAYOUT    ";
+    print_availability( OP_IS_FLUID_LAYOUT )
+
+    if check_availability( OP_IS_FLUID_LAYOUT )
+    {
+        writefile CONTROL_FILE
+        {
+            writeval OP_IS_FLUID_LAYOUT
+        }
+
+        readfile CONTROL_FILE
+        {
+            val1 = readval
+        }
+
+        if val1 = 1
+        {
+            print " (yes)";
+        }
+        else
+        {
+            print " (no)";
+        }
+    }
+
+    "\n1100 SET_COLOR          ";
+    print_availability( OP_SET_COLOR )
+
+    if check_availability( OP_SET_COLOR )
+    {
+        local i
+        color_text[0] = "r", "a", "i", "n", "b", "o", "w"
+
+        print " (";
+
+        for( i = 1; i < 8; ++i )
+        {
+            set_color( i, random(256) - 1, random(256) - 1, random(256) - 1 )
+            color i
+            print color_text[i-1];
+        }
+
+        color 16
+        print ")";
+    }
+
+     "\n1200 IS_FULLSCREEN      ";
+    print_availability( OP_IS_FULLSCREEN )
+
+    print "\n"
+
+    while 1
+    {
+        "\nPress"
+        "\_A to test 300 ABORT"
+        "\_B to test 500 OPEN_URL"
+        "or any other key to quit\n"
+        pause
+
+        select word[0]
+            case 65
+            {
+                if check_availability( OP_ABORT )
+                {
+                    "300 ABORT"
+
+                    writefile CONTROL_FILE
+                    {
+                        writeval OP_ABORT
+                    }
+                }
+                else
+                {
+                    color 12
+                    "300 ABORT not supported"
+                    color 16
+                }
+            }
+
+            case 66
+            {
+                if check_availability( OP_OPEN_URL )
+                {
+                    "500 OPEN_URL"
+
+                    writefile CONTROL_FILE
+                    {
+                        writeval OP_OPEN_URL
+                        writeval "http://example.com"
+                    }
+                }
+                else
+                {
+                    color 12
+                    "500 OPEN_URL not supported"
+                    color 16
+                }
+            }
+
+            case else
+            {
+                "Exiting..."
+                quit
+            }
+    }
+}

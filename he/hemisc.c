@@ -23,7 +23,7 @@
 	Copyright (c) 1995-2006 by Kent Tessman
 */
 
-
+#include <emscripten.h>
 #include "heheader.h"
 
 
@@ -986,6 +986,15 @@ void FileIO(void)
 	fclose(io);
 	io = NULL;
 	ioblock = 0;
+
+#if defined (__EMSCRIPTEN__)
+    if (strcmp(fileiopath, OPCODE_CONTROL_FILE) != 0 && iotype==WRITEFILE_T) {
+        // tell the frontend that we're reading opcode data
+        EM_ASM(
+            hugoui.process_opcode_file();
+        );
+    }
+#endif
 
 LeaveFileIO:
 	ioerror = 0;

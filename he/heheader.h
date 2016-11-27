@@ -87,6 +87,7 @@ int hugojs_get_screenheight(void);
 #define ACTUAL_SCREENHEIGHT() hugojs_get_screenheight()
 
 #define HUGO_INLINE static inline
+#define OPCODE_CONTROL_FILE "OpCtlAPI"
 
 extern char autosave_filename[];
 int hugo_restore_autosave(char *filename);

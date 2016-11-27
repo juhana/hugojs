@@ -8,6 +8,9 @@
         datadir,
         autosaveFilename;
 
+    var OPCODE_CONTROL_FILE = "OpCtlAPI",
+        OPCODE_CHECK_FILE = "OpCheck";
+
 
     /**
      * FNV32-algorithm to calculate the story file's checksum.
@@ -100,6 +103,13 @@
 
             // start reacting to keypresses
             hugoui.keypress.init();
+
+            // save the virtual file that tells the game file we support extra opcodes
+            FS.writeFile(
+                OPCODE_CHECK_FILE,
+                [ 89, 47 ],   // == 12121
+                { encoding: 'binary' }
+            );
 
             // tell the engine to start the game
             _hugojs_start();
@@ -220,6 +230,72 @@
             [ 'string' ],
             [ autosaveFilename ]
         );
+    };
+
+
+    /**
+     * The engine has written to the opcode file. See what's in it,
+     * execute the opcode, and write the response (if any).
+     */
+    hugoui.process_opcode_file = function() {
+        var opcodeData = FS.readFile( OPCODE_CONTROL_FILE ),
+            op = opcodeData[ 0 ] + opcodeData[ 1 ] * 256,
+            response = [];
+
+        var addResponse = function( value ) {
+                response.push( value % 256 );
+                response.push( value >> 8 );
+            };
+
+        var opcodes = {
+            1: function() {
+                if( opcodes[ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ] ) {
+                    addResponse( 1 );
+                }
+                else {
+                    addResponse( 0 );
+                }
+            },
+
+            200: function() {   // GET_OS
+                addResponse( 6 );   // 6 = Browser
+            },
+
+            500: function() {   // OPEN_URL
+                var url = Module.ccall(
+                    'hugojs_get_dictionary_word',
+                    'string',
+                    [ 'int' ],
+                    [ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ]
+                );
+
+                if( confirm( 'Game wants to open web address ' + url + '. Continue?' ) ) {
+                    window.open( url );
+                }
+            },
+
+            800: function() {   // IS_MUSIC_PLAYING
+                addResponse( 0 );
+            },
+
+            900: function() {   // IS_SAMPLE_PLAYING
+                addResponse( 0 );
+            },
+
+            1000: function() {  // IS_FLUID_LAYOUT
+                addResponse( 1 );
+            }
+/*
+            1100: function() {  // SET_COLOR
+                hugoui.setCustomColor( opcodeData[ 2 ], opcodeData[ 4 ], opcodeData[ 6 ], opcodeData[ 8 ] );
+            }
+*/
+        };
+
+        if( opcodes[ op ] ) {
+            opcodes[ op ]();
+            FS.writeFile( OPCODE_CONTROL_FILE, response, { encoding: 'binary' } );
+        }
     };
 
 

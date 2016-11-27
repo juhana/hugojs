@@ -3,6 +3,8 @@
 
         // currently set colors
     var currentColors = [ defaultColors( 0 ) ],
+        // custom colors set by extra opcode 1100
+        customColors = {},
         // container for text that's being flushed to the output
         flushedText = document.createElement( 'span' ),
         // currently set fonts
@@ -288,6 +290,14 @@
 
         if( !font[ hugoWindow ].proportional ) {
             elem.className += " font-fixed-width";
+        }
+
+        if( customColors[ currentColors[ hugoWindow ].text ] ) {
+            elem.style.color = 'rgb(' + customColors[ currentColors[ hugoWindow ].text ][ 0 ] + ', ' + customColors[ currentColors[ hugoWindow ].text ][ 1 ] + ', ' + customColors[ currentColors[ hugoWindow ].text ][ 2 ] + ')';
+        }
+
+        if( customColors[ currentColors[ hugoWindow ].background ] ) {
+            elem.style.backgroundColor = 'rgb(' + customColors[ currentColors[ hugoWindow ].background ][ 0 ] + ', ' + customColors[ currentColors[ hugoWindow ].background ][ 1 ] + ', ' + customColors[ currentColors[ hugoWindow ].background ][ 2 ] + ')';
         }
 
         // apply same styles to the prompt
@@ -764,6 +774,15 @@
 
     hugoui.sendWindowDimensions = sendWindowDimensions;
 
+
+    /**
+     * Sets a custom color for a color code.
+     */
+    hugoui.setCustomColor = function( color, r, g, b ) {
+        console.log( arguments );
+        customColors[ color ] = [ r, g, b ];
+        hugoui.buffer.flush();
+    };
 
     /**
      * Sets the window title. Called by the engine.
