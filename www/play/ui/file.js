@@ -273,6 +273,15 @@
                 addResponse( 6 );   // 6 = Browser
             },
 
+            300: function() {   // ABORT
+                // try to close the window – won't work unless the interpreter
+                // window was programmatically opened by another page
+                window.close();
+
+                // quick-and-dirty abort by throwing an exception
+                throw new Error( 'Abort opcode called' );
+            },
+
             500: function() {   // OPEN_URL
                 var url = Module.ccall(
                     'hugojs_get_dictionary_word',
@@ -296,12 +305,15 @@
 
             1000: function() {  // IS_FLUID_LAYOUT
                 addResponse( 1 );
-            }
+            },
 /*
             1100: function() {  // SET_COLOR
                 hugoui.setCustomColor( opcodeData[ 2 ], opcodeData[ 4 ], opcodeData[ 6 ], opcodeData[ 8 ] );
-            }
+            },
 */
+            1300: function() {  // HIDES_CURSOR
+                addResponse( 1 );
+            }
         };
 
         if( opcodes[ op ] ) {

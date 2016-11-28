@@ -14,6 +14,8 @@ constant OP_IS_SAMPLE_PLAYING 900
 constant OP_IS_FLUID_LAYOUT 1000
 constant OP_SET_COLOR 1100
 constant OP_IS_FULLSCREEN 1200
+constant OP_HIDES_CURSOR 1300
+constant OP_TOP_JUSTIFIED 1400
 
 constant OS_UNKNOWN 0 
 constant OS_WINDOWS 1 
@@ -60,6 +62,33 @@ routine print_availability( opcode )
         color 12
         "not supported";
         color 16
+    }
+}
+
+routine print_boolean_status( opcode )
+{
+    local val
+
+    if check_availability( opcode )
+    {
+        writefile CONTROL_FILE
+        {
+            writeval opcode
+        }
+
+        readfile CONTROL_FILE
+        {
+            val = readval
+        }
+
+        if val = 1
+        {
+            print " (yes)";
+        }
+        else
+        {
+            print " (no)";
+        }
     }
 }
 
@@ -169,33 +198,13 @@ routine Main
     print_availability( OP_SET_CLIPBOARD )
     "\n\_800 IS_MUSIC_PLAYING   ";
     print_availability( OP_IS_MUSIC_PLAYING )
+    print_boolean_status( OP_IS_MUSIC_PLAYING )
     "\n\_900 IS_SAMPLE_PLAYING  ";
     print_availability( OP_IS_SAMPLE_PLAYING )
+    print_boolean_status( OP_IS_SAMPLE_PLAYING )
     "\n1000 IS_FLUID_LAYOUT    ";
     print_availability( OP_IS_FLUID_LAYOUT )
-
-    if check_availability( OP_IS_FLUID_LAYOUT )
-    {
-        writefile CONTROL_FILE
-        {
-            writeval OP_IS_FLUID_LAYOUT
-        }
-
-        readfile CONTROL_FILE
-        {
-            val1 = readval
-        }
-
-        if val1 = 1
-        {
-            print " (yes)";
-        }
-        else
-        {
-            print " (no)";
-        }
-    }
-
+    print_boolean_status( OP_IS_FLUID_LAYOUT )
     "\n1100 SET_COLOR          ";
     print_availability( OP_SET_COLOR )
 
@@ -217,8 +226,15 @@ routine Main
         print ")";
     }
 
-     "\n1200 IS_FULLSCREEN      ";
+    "\n1200 IS_FULLSCREEN      ";
     print_availability( OP_IS_FULLSCREEN )
+    print_boolean_status( OP_IS_FULLSCREEN )
+    "\n1300 HIDES_CURSOR       ";
+    print_availability( OP_HIDES_CURSOR )
+    print_boolean_status( OP_HIDES_CURSOR )
+    "\n1400 TOP_JUSTIFIED      ";
+    print_availability( OP_TOP_JUSTIFIED )
+    print_boolean_status( OP_TOP_JUSTIFIED )
 
     print "\n"
 
