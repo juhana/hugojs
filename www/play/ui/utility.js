@@ -79,6 +79,7 @@
     var option_defaults = {
             autosave: true,
             exit_url: '',
+            extra_opcodes: true,
             proxy_url: 'proxy.php',
             use_proxy: 'auto',
             windowing: true

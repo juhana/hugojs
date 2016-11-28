@@ -105,11 +105,19 @@
             hugoui.keypress.init();
 
             // save the virtual file that tells the game file we support extra opcodes
-            FS.writeFile(
-                OPCODE_CHECK_FILE,
-                [ 89, 47 ],   // == 12121
-                { encoding: 'binary' }
-            );
+            if( hugojs_options.extra_opcodes ) {
+                FS.writeFile(
+                    OPCODE_CHECK_FILE,
+                    [ 89, 47 ],   // == 12121
+                    {encoding: 'binary'}
+                );
+            }
+            else {
+                try {
+                    FS.unlink( OPCODE_CHECK_FILE );
+                }
+                catch(e) {}
+            }
 
             // tell the engine to start the game
             _hugojs_start();
@@ -238,6 +246,10 @@
      * execute the opcode, and write the response (if any).
      */
     hugoui.process_opcode_file = function() {
+        if( !hugojs_options.extra_opcodes ) {
+            return;
+        }
+
         var opcodeData = FS.readFile( OPCODE_CONTROL_FILE ),
             op = opcodeData[ 0 ] + opcodeData[ 1 ] * 256,
             response = [];
