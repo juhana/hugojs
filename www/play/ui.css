@@ -7,14 +7,21 @@ body {
     overflow-y: scroll;
 }
 
-body, input, #loader {
+body,
+input,
+#loader {
     color: #aaa;
     background-color: #000;
     font-family: monospace;
 }
 
-body, input {
+body,
+input {
     font-size: 17px;
+}
+
+#lineinput {
+    display: inline-block;
 }
 
 #output {
@@ -27,17 +34,17 @@ body, input {
     white-space: pre-wrap;
 }
 
-#input {
+#lineinput {
+    display: inline-block;
+    width: 500px;
+}
+
+#lineinput-field {
     border: 0;
     display: inline;
     outline: 0;
     padding: 0;
     width: 100%;
-}
-
-#prompt {
-    display: inline-block;
-    width: 500px;
 }
 
 .hugowindow {

@@ -10,18 +10,22 @@
     <link rel="stylesheet" href="ui.css">
 </head>
 <body>
-    <div id="output">
-        <div id="window0" aria-live="polite" aria-atomic="false" aria-relevant="additions"></div>
-    </div>
+    <main id="haven">
+        <div id="output">
+            <div id="window0" aria-live="polite" aria-atomic="false" aria-relevant="additions"></div>
+        </div>
 
-    <form id="prompt">
-        <input id="input" type="text" autocapitalize="none">
-    </form>
+        <form id="lineinput">
+            <input name="lineinput" id="lineinput-field" type="text" autocapitalize="none" autocomplete="off">
+        </form>
 
-    <div id="loader">
-        <h2 id="loader-message">Loading scripts</h2>
-        <div id="spinner">H</div>
-    </div>
+        <div id="loader">
+            <h2 id="loader-message">Loading scripts</h2>
+            <div id="spinner">V</div>
+        </div>
+    </main>
+
+    <script src="ui.js"></script>
 
     <script>
         window.hugojs_options = {
@@ -32,7 +36,7 @@
             autosave: true,
 
             // the URL where the browser is redirected when the story ends
-            exit_url: "../",
+            exit_url: false, // "../",
 
             // disallow supplying options in the URL (except story file)?
             lock_options: false,
@@ -54,10 +58,10 @@
             // Useful if the status line is buggy but the game is otherwise playable.
             windowing: true
         };
+
+        hugoui.init();
     </script>
 
-    <script src="ui.js"></script>
-    <script src="bootstrap.js"></script>
     <script src="he.js" defer></script>
 </body>
 </html>

@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     my_argv = argv;
 }
 
-void EMSCRIPTEN_KEEPALIVE hugojs_start()
+void EMSCRIPTEN_KEEPALIVE haven_start()
 {
     he_main(2, my_argv);
 }

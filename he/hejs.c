@@ -330,7 +330,7 @@ int hugo_getkey(void)
 
 int getline_ready = 0;
 
-void EMSCRIPTEN_KEEPALIVE hugojs_getline(char *s) {
+void EMSCRIPTEN_KEEPALIVE haven_getline(char *s) {
     strcpy( buffer, s );
     hugo_print(s);
     getline_ready = 1;
@@ -342,7 +342,7 @@ void hugo_getline(char *p)
 	hugo_print(p);
 
 	EM_ASM(
-	    hugoui.prompt.show();
+	    haven.prompt.show();
 	);
 
 	while(!getline_ready) {
@@ -662,10 +662,10 @@ void hugo_print(char *a)
 	EM_ASM_({
 	    if( $1 < 0 ) {
             // manually fix Latin-1 encoding problems
-	        hugoui.buffer.append(String.fromCharCode(256 + $1), $2);
+	        hugoui.print(String.fromCharCode(256 + $1), $2);
 	    }
 	    else {
-	        hugoui.buffer.append(Pointer_stringify($0), $2);
+	        hugoui.print(Pointer_stringify($0), $2);
 	    }
     }, a, a[0], inwindow );
 }
