@@ -1,0 +1,3 @@
+[submodule "www/play/haven"]
+	path = www/play/haven
+	url = https://github.com/vorple/haven.git

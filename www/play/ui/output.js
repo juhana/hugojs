@@ -29,33 +29,6 @@
         windowDimensions = [],
         useWindowing = hugojs_options.windowing;
 
-
-    /**
-     * Add lines to the output.
-     *
-     * @param amount Number of lines
-     * @param column Number of spaces that are added to the last line
-     * @param hugoWindow
-     */
-    function createLines( amount, column, hugoWindow ) {
-        for( var i = 0; i < amount; ++i ) {
-            var newlineFiller = document.createElement( 'span' );
-            newlineFiller.className = 'font-fixed-width';
-            newlineFiller.innerHTML = '\n';
-            hugoui.getOutputWindow( hugoWindow ).appendChild( newlineFiller );
-        }
-
-        if( column > 0 ) {
-            var spaceFiller = document.createElement( 'span' );
-            spaceFiller.innerHTML = Array( column ).join( " " );
-            spaceFiller.className = 'font-fixed-width';
-            hugoui.getOutputWindow( hugoWindow ).appendChild( spaceFiller );
-        }
-
-        hugoui.position.reset( hugoWindow );
-    }
-
-
     /**
      * Set the default colors to a font object
      *
@@ -158,88 +131,6 @@
         return dimensions;
     }
 
-
-    /**
-     * Prints text to a specific spot in the text window.
-     *
-     * @param line
-     * @param col
-     * @param newContent
-     * @param hugoWindow
-     */
-    function replacePart( line, col, newContent, hugoWindow ) {
-//        console.log( 'Replacing line', line, 'col', col, 'with', newContent.innerHTML, 'in window', hugoWindow );
-        var output = hugoui.getOutputWindow( hugoWindow ),
-            nodes = textNodesUnder( output ),
-            range = document.createRange(),
-            textContent,
-            currentLine = 1, currentCol = 1, startFound = false, endCounter = 0;
-
-        var overflow = (function() {
-            for( var i = 0; i < nodes.length; ++i ) {
-                textContent = nodes[ i ].textContent;
-                if( currentLine === line ) {
-                    for( var j = 0; j < textContent.length; ++j ) {
-                        if( startFound ) {
-                            endCounter++;
-                            if( endCounter === newContent.textContent.length || textContent[ j ] === '\n' ) {
-                                range.setEnd( nodes[i], j );
-                                return false;
-                            }
-                        }
-                        else if( currentCol === col ) {
-                            range.setStart( nodes[i], j );
-                            startFound = true;
-                            if( j === textContent.length - 1 ) {
-                                range.setEnd( nodes[i], j );
-                                return false;
-                            }
-                        }
-                        else if( textContent[j] === '\n' ) {
-                            var filler = document.createTextNode( Array( col - currentCol + 1 ).join( ' ' ) + '\n' );
-                            nodes[i].textContent = textContent.substr( 0, j ) + ' ';
-                            nodes[i].parentNode.insertBefore( filler, nodes[i].nextSibling );
-                            range.setStart( filler, col - currentCol - 1 );
-                            range.setEnd( filler, col - currentCol - 1 );
-                            return false;
-                        }
-
-                        currentCol++;
-                    }
-                }
-                else {
-                    if( textContent.indexOf( '\n' ) > -1 ) {
-                        currentLine++;
-                    }
-                }
-            }
-
-            return true;
-        })();
-
-        if( overflow ) {
-            createLines( position[ hugoWindow ].line - currentLine, col, hugoWindow );
-            output.appendChild( newContent );
-            return;
-        }
-
-        if( newContent.textContent.indexOf( '\n' ) > -1 ) {
-            newContent.textContent = newContent.textContent.replace( '\n', '' );
-            position[ hugoWindow ].line++;
-            position[ hugoWindow ].col = 1;
-        }
-        else {
-            position[ hugoWindow ].col += newContent.textContent.length;
-        }
-
-        range.deleteContents();
-        range.insertNode( newContent );
-
-        if( !newContent.nextSibling ) {
-            position[ hugoWindow ].line = null;
-            position[ hugoWindow ].col = null;
-        }
-    }
 
 
     /**
@@ -426,27 +317,6 @@
         );
     }
 
-
-    /**
-     * Get all text nodes contained by a DOM node
-     *
-     * From http://stackoverflow.com/a/10730777
-     *
-     * @param node
-     * @returns {Array}
-     */
-    function textNodesUnder( node ) {
-        var all = [];
-        for( node = node.firstChild; node; node = node.nextSibling ) {
-            if( node.nodeType == 3 ) {
-                all.push( node );
-            }
-            else {
-                all = all.concat( textNodesUnder( node ) );
-            }
-        }
-        return all;
-    }
 
 
     hugoui.buffer = {
@@ -782,15 +652,6 @@
         console.log( arguments );
         customColors[ color ] = [ r, g, b ];
         hugoui.buffer.flush();
-    };
-
-    /**
-     * Sets the window title. Called by the engine.
-     *
-     * @param title
-     */
-    hugoui.setTitle = function( title ) {
-        document.title = title;
     };
 
 

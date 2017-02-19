@@ -1,68 +1,8 @@
 (function() {
     var hugoui = {};
 
-    var windowDimensions = [];
-
-    /**
-     * When the window size changes, measures the window width in characters.
-     */
-    function measureDimensions() {
-        var outputContainer = haven.window.get( 0 ).parentNode,
-            dimensions = {
-                window: {
-                    width: parseInt( window.getComputedStyle( outputContainer ).width, 10 ),
-                    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-                },
-                line: {},
-                char: {}
-            },
-            measureElem = document.createElement( 'span' ),
-            outputDimensions = dimensions.window,
-            measureElemHeight;
-
-        measureElem.innerHTML = '00000<br>00000<br>00000';
-        measureElem.className = 'font-fixed-width';
-        measureElem.style.display = 'inline-block';
-
-        outputContainer.appendChild( measureElem );
-
-        dimensions.char.width = measureElem.offsetWidth / 5;
-        dimensions.line.width = Math.floor( outputDimensions.width / dimensions.char.width - 1 );
-
-        measureElem.style.display = 'block';
-        measureElemHeight = measureElem.clientHeight;
-        measureElem.innerHTML += '<br>00000<br>00000';
-        dimensions.char.height = ( measureElem.clientHeight - measureElemHeight ) / 2;
-        dimensions.line.height = Math.floor( outputDimensions.height / dimensions.char.height );
-
-        measureElem.parentNode.removeChild( measureElem );
-
-//        console.log(dimensions);
-        return dimensions;
-    }
-
-
-    /**
-     * Send the window dimensions to the engine
-     */
-    function sendWindowDimensions() {
-        var dimensions = measureDimensions();
-//        console.log( 'sending dimensions', dimensions);
-
-        Module.ccall(
-            'hugo_set_window_dimensions',
-            'null',
-            [ 'number', 'number', 'number', 'number', 'number', 'number' ],
-            [
-                dimensions.window.width,
-                dimensions.window.height,
-                dimensions.line.width,
-                dimensions.line.height,
-                dimensions.char.width,
-                dimensions.char.height
-            ]
-        );
-    }
+    var OPCODE_CONTROL_FILE = "OpCtlAPI",
+        OPCODE_CHECK_FILE = "OpCheck";
 
 
     /**
@@ -112,18 +52,23 @@
      * Called by the engine when the game has ended.
      */
     hugoui.gameEnded = function() {
+        // delete the autosave file
+        if( haven.options.get( 'autosave' ) ) {
+            haven.state.autosave.remove();
+        }
+
         // Redirect to an exit URL when the game ends.
         // A fatal error should block the redirection.
         // As a crude check for whether an error was thrown,
         // check if the error message div is present.
-        if( hugojs_options.exit_url && !document.getElementById( 'fatal-error' ) ) {
+        if( haven.options.get( 'exit_url' ) && !document.getElementById( 'fatal-error' ) ) {
             // if any text is printed after previous input,
             // wait for keypress/click before redirecting
-            if( hugoui.isTextPrinted ) {
+            if( haven.isTextPrinted ) {
                 haven.input.setMode( 'endgame' );
             }
             else {
-                window.location = hugojs_options.exit_url;
+                window.location = haven.options.get( 'exit_url' );
             }
         }
     };
@@ -141,7 +86,29 @@
             // no Unicode support
             unicode: false,
 
+            // the name of the story file in the virtual filesystem
             virtualStoryfile: 'game.hex'
+        });
+
+        // save the virtual file that tells the game file we support extra opcodes
+        haven.assets.addCallback( function( done ) {
+            FS.syncfs( true, function () {
+                if( haven.options.get( 'extra_opcodes' ) ) {
+                    FS.writeFile(
+                        OPCODE_CHECK_FILE,
+                        [ 89, 47 ],   // == 12121
+                        {encoding: 'binary'}
+                    );
+                }
+                else {
+                    try {
+                        FS.unlink( OPCODE_CHECK_FILE );
+                    }
+                    catch(e) {}
+                }
+
+                FS.syncfs( false, done );
+            });
         });
     };
 
@@ -158,28 +125,14 @@
             loader.parentNode.removeChild( loader );
         }
 
-        sendWindowDimensions();
+        hugoui.sendWindowDimensions();
     };
 
 
     /**
-     * Set the cursor position.
+     * Set the print cursor position.
      */
     hugoui.position = {
-        /*
-        reset: function( hugoWindow ) {
-            // if no window specified, reset all positions
-            if( hugoWindow === undefined ) {
-                position = {
-                    col: null,
-                    line: null
-                };
-            }
-            else {
-                setPosition( null, null, hugoWindow );
-            }
-        },
-*/
         set: function( column, line, hugoWindow ) {
 //                console.log( 'setting position  line', line, 'col', column, 'window', hugoWindow );
             haven.window.position.set( column, line, hugoWindow );
@@ -187,8 +140,101 @@
     };
 
 
+    /**
+     * Print text.
+     *
+     * @param text
+     * @param hugoWindow
+     */
     hugoui.print = function( text, hugoWindow ) {
+        // \n is a carriage return, not needed in the browser environment
+        if( text === '\n' ) {
+            return;
+        }
+
         haven.buffer.append( text, hugoWindow );
+    };
+
+
+    /**
+     * The engine has written to the opcode file. See what's in it,
+     * execute the opcode, and write the response (if any).
+     */
+    hugoui.process_opcode_file = function() {
+        if( !haven.options.get( 'extra_opcodes' ) ) {
+            return;
+        }
+
+        var opcodeData = FS.readFile( OPCODE_CONTROL_FILE ),
+            op = opcodeData[ 0 ] + opcodeData[ 1 ] * 256,
+            response = [];
+
+        var addResponse = function( value ) {
+            response.push( value % 256 );
+            response.push( value >> 8 );
+        };
+
+        var opcodes = {
+            1: function() {
+                if( opcodes[ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ] ) {
+                    addResponse( 1 );
+                }
+                else {
+                    addResponse( 0 );
+                }
+            },
+
+            200: function() {   // GET_OS
+                addResponse( 6 );   // 6 = Browser
+            },
+
+            300: function() {   // ABORT
+                // try to close the window – won't work unless the interpreter
+                // window was programmatically opened by another page
+                window.close();
+
+                // quick-and-dirty abort by throwing an exception
+                throw new Error( 'Abort opcode called' );
+            },
+
+            500: function() {   // OPEN_URL
+                var url = Module.ccall(
+                    'hugojs_get_dictionary_word',
+                    'string',
+                    [ 'int' ],
+                    [ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ]
+                );
+
+                if( confirm( 'Game wants to open web address ' + url + '. Continue?' ) ) {
+                    window.open( url );
+                }
+            },
+
+            800: function() {   // IS_MUSIC_PLAYING
+                addResponse( 0 );
+            },
+
+            900: function() {   // IS_SAMPLE_PLAYING
+                addResponse( 0 );
+            },
+
+            1000: function() {  // IS_FLUID_LAYOUT
+                addResponse( 1 );
+            },
+            /*
+             1100: function() {  // SET_COLOR
+             hugoui.setCustomColor( opcodeData[ 2 ], opcodeData[ 4 ], opcodeData[ 6 ], opcodeData[ 8 ] );
+             },
+             */
+            1300: function() {  // HIDES_CURSOR
+                addResponse( 1 );
+            }
+        };
+
+        if( opcodes[ op ] ) {
+            opcodes[ op ]();
+            FS.writeFile( OPCODE_CONTROL_FILE, response, { encoding: 'binary' } );
+        }
     };
 
 
@@ -200,7 +246,27 @@
     };
 
 
-    hugoui.sendWindowDimensions = sendWindowDimensions;
+    /**
+     * Send the window dimensions to the engine (Hugo only)
+     */
+    hugoui.sendWindowDimensions = function() {
+        var dimensions = haven.window.measureDimensions();
+//        console.log( 'sending dimensions', dimensions);
+
+        Module.ccall(
+            'hugo_set_window_dimensions',
+            'null',
+            [ 'number', 'number', 'number', 'number', 'number', 'number' ],
+            [
+                dimensions.window.width,
+                dimensions.window.height,
+                dimensions.line.width,
+                dimensions.line.height,
+                dimensions.char.width,
+                dimensions.char.height
+            ]
+        );
+    }
 
 
     /**
@@ -212,59 +278,6 @@
         haven.window.setTitle( title );
     };
 
-
-    hugoui.window = {
-        /**
-         * Create a new Hugo window.
-         *
-         * @param hugoWindow
-         * @param left
-         * @param top
-         * @param right
-         * @param bottom
-         */
-        create: function( hugoWindow, left, top, right, bottom ) {
-//                console.log( 'creating window', hugoWindow + ':  left', left, 'top', top, 'right', right, 'bottom', bottom );
-            var newWindow,
-                dimensions = measureDimensions(),
-                charHeight = dimensions.char.height,
-                mainContainer = haven.window.get( 0 ).parentNode;
-
-            windowDimensions[ hugoWindow ] = {
-                left: left,
-                top: top,
-                right: right,
-                bottom: bottom
-            };
-
-            if( !hugojs_options.windowing ) {
-                return false;
-            }
-
-            // the main window only changes size
-            if( hugoWindow === 0 ) {
-//                outputWindow[0].style.paddingLeft = ( left - 1 ) + 'px';
-                haven.window.get( 0 ).style.paddingTop = ( ( top - 1 ) * dimensions.char.height ) + 'px';
-//                outputWindow[0].style.width = ( ( right + 1 ) * dimensions.char.width ) + 'px';
-                return;
-            }
-
-            if( haven.window.get( hugoWindow ) ) {
-                mainContainer.removeChild( haven.window.get( hugoWindow ) );
-            }
-
-            newWindow = document.createElement( 'div' );
-            newWindow.id = 'window' + hugoWindow;
-            newWindow.className = 'hugowindow';
-            newWindow.style.height = charHeight * ( bottom - top + 1) + 'px';
-            newWindow.style.top = ( ( top - 1 ) * charHeight ) + 'px';
-            newWindow.style.marginLeft = ( left - 1 ) + 'px';
-            newWindow.style.width = ( ( right - left + 2 ) * dimensions.char.width ) + 'px';
-
-            haven.window.container.append( newWindow, mainContainer );
-            haven.style.apply( newWindow, hugoWindow );
-        }
-    };
 
     // Set Emscripten's command line arguments that load the story file
     window.Module.arguments = [ '/game.hex' ];

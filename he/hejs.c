@@ -274,7 +274,7 @@ void hugo_closefiles()
 
 int getkey_ready = 0;
 
-void EMSCRIPTEN_KEEPALIVE hugojs_getkey(s) {
+void EMSCRIPTEN_KEEPALIVE haven_getkey(s) {
     int keycode;
 
     // convert JS arrow keycodes
@@ -309,7 +309,7 @@ void EMSCRIPTEN_KEEPALIVE hugojs_getkey(s) {
 int hugo_getkey(void)
 {
     EM_ASM(
-        hugoui.keypress.wait();
+        haven.input.keypress.wait();
     );
 
 	while(!getkey_ready) {
@@ -390,7 +390,7 @@ int hugo_waitforkey(void)
 int hugo_iskeywaiting(void)
 {
     return EM_ASM_INT({
-        return hugoui.keypress.is_waiting();
+        return haven.input.keypress.isWaiting();
     }, 1);
 }
 
@@ -590,7 +590,7 @@ void hugo_settextwindow(int left, int top, int right, int bottom)
 	physical_windowheight = (bottom-top+1)*FIXEDLINEHEIGHT;
 
 	EM_ASM_({
-	    hugoui.window.create($0, $1, $2, $3, $4);
+	    haven.window.create($0, $1, $2, $3, $4);
 	}, inwindow, left, top, right, bottom );
 
 	/* Note that, e.g., a full-screen window on an 80x25 text screen,
@@ -925,7 +925,7 @@ int hugojs_get_screenheight() {
 int RestoreGameData(void);
 int SaveGameData(void);
 
-int EMSCRIPTEN_KEEPALIVE hugojs_save_autosave(char *filename) {
+int EMSCRIPTEN_KEEPALIVE haven_save_autosave(char *filename) {
     if (!(save = HUGO_FOPEN(filename, "w+b"))) return 0;
 	if (!SaveGameData()) goto SaveError;
 
@@ -933,7 +933,7 @@ int EMSCRIPTEN_KEEPALIVE hugojs_save_autosave(char *filename) {
 	save = NULL;
 	strcpy(savefile, filename);
     EM_ASM(
-        hugoui.syncfs();
+        haven.file.syncfs();
     );
 
 	return(1);
