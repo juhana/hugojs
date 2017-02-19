@@ -83,6 +83,9 @@
             // as opposed to Vorple that uses a custom prompt
             enginePrompt: true,
 
+            // user-provided options
+            options: hugojs_options,
+
             // no Unicode support
             unicode: false,
 
