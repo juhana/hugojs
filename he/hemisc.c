@@ -3,19 +3,19 @@
 
 	Miscellaneous functions:
 
-		AP                      ParseCommandLine
-		CallRoutine             PassLocals
+		AP					  ParseCommandLine
+		CallRoutine			 PassLocals
 		ContextCommand		Peek, PeekWord
-		Dict                    Poke, PokeWord
-		FatalError              PrintHex
-		FileIO                  Printout
-		Flushpbuffer            PromptMore
-		GetCommand              RecordCommands
-		GetString               SaveUndo
-		GetText                 SetStackFrame
-		GetWord                 SetupDisplay
+		Dict					Poke, PokeWord
+		FatalError			  PrintHex
+		FileIO				  Printout
+		Flushpbuffer			PromptMore
+		GetCommand			  RecordCommands
+		GetString			   SaveUndo
+		GetText				 SetStackFrame
+		GetWord				 SetupDisplay
 		HandleTailRecursion	SpecialChar
-		InitGame                TrytoOpen
+		InitGame				TrytoOpen
 		LoadGame		Undo
 
 	for the Hugo Engine
@@ -27,7 +27,7 @@
 #include "heheader.h"
 
 
-void Banner(void);                      	/* from he.c */
+void Banner(void);					  	/* from he.c */
 
 void hugo_stopmusic(void);
 void hugo_stopsample(void);
@@ -49,7 +49,7 @@ HUGO_FILE script = NULL;
 HUGO_FILE save = NULL;
 HUGO_FILE record = NULL;
 HUGO_FILE playback = NULL;
-HUGO_FILE io = NULL;     char ioblock = 0; char ioerror = 0;
+HUGO_FILE io = NULL;	 char ioblock = 0; char ioerror = 0;
 char gamefile[MAXPATH];
 char gamepath[MAXPATH];
 #if !defined (GLK)
@@ -62,26 +62,26 @@ char recordfile[MAXPATH];
 char id[3];
 char serial[9];
 unsigned int codestart;			/* start of executable code	*/
-unsigned int objtable;                	/* object table			*/
-unsigned int eventtable;              	/* event table			*/
-unsigned int proptable;               	/* property table		*/
-unsigned int arraytable;              	/* array data table		*/
-unsigned int dicttable;               	/* dictionary			*/
-unsigned int syntable;                	/* synonyms			*/
-unsigned int initaddr;                	/* "Init" routine		*/
-unsigned int mainaddr;                	/* "Main"			*/
-unsigned int parseaddr;               	/* "Parse"			*/
-unsigned int parseerroraddr;          	/* "ParseError"			*/
-unsigned int findobjectaddr;          	/* "FindObject"			*/
-unsigned int endgameaddr;             	/* "Endgame"			*/
-unsigned int speaktoaddr;             	/* "SpeakTo"			*/
+unsigned int objtable;					/* object table			*/
+unsigned int eventtable;			  	/* event table			*/
+unsigned int proptable;			   	/* property table		*/
+unsigned int arraytable;			  	/* array data table		*/
+unsigned int dicttable;			   	/* dictionary			*/
+unsigned int syntable;					/* synonyms			*/
+unsigned int initaddr;					/* "Init" routine		*/
+unsigned int mainaddr;					/* "Main"			*/
+unsigned int parseaddr;			   	/* "Parse"			*/
+unsigned int parseerroraddr;		  	/* "ParseError"			*/
+unsigned int findobjectaddr;		  	/* "FindObject"			*/
+unsigned int endgameaddr;			 	/* "Endgame"			*/
+unsigned int speaktoaddr;			 	/* "SpeakTo"			*/
 unsigned int performaddr;		/* "Perform"			*/
 
 /* Totals */
 int objects;
 int events;
 int dictcount;		/* dictionary entries */
-int syncount;		/* synonyms, etc.     */
+int syncount;		/* synonyms, etc.	 */
 
 #if !defined (COMPILE_V25)
 char context_command[MAX_CONTEXT_COMMANDS][64];
@@ -89,27 +89,27 @@ int context_commands;
 #endif
 
 /* Loaded memory image */
-unsigned char *mem = NULL;		/* the memory buffer       */
-int loaded_in_memory = true;		/* i.e., the text bank     */
+unsigned char *mem = NULL;		/* the memory buffer	   */
+int loaded_in_memory = true;		/* i.e., the text bank	 */
 unsigned int defseg;			/* holds segment indicator */
-unsigned int gameseg;			/* code segment            */
-long codeptr;                           /* code pointer            */
-long codeend;                           /* end of loaded code      */
+unsigned int gameseg;			/* code segment			*/
+long codeptr;						   /* code pointer			*/
+long codeend;						   /* end of loaded code	  */
 
 /* Text output */
-char pbuffer[MAXBUFFER*2+1];            /* print buffer for line-wrapping  */
-int currentpos = 0;                     /* column position (pixel or char) */
-int currentline = 0;                    /* row number (line)               */
-int full = 0;                           /* page counter for PromptMore     */
+char pbuffer[MAXBUFFER*2+1];			/* print buffer for line-wrapping  */
+int currentpos = 0;					 /* column position (pixel or char) */
+int currentline = 0;					/* row number (line)			   */
+int full = 0;						   /* page counter for PromptMore	 */
 signed char fcolor = 16,		/* default fore/background colors  */
 	bgcolor = 17,			/* (16 = default foreground,	   */
 	icolor = -1;			/*  17 = default background)	   */
 signed char default_bgcolor = 17;	/* default for screen background   */
-int currentfont = NORMAL_FONT;		/* current font bitmasks           */
+int currentfont = NORMAL_FONT;		/* current font bitmasks		   */
 char capital = 0;			/* if next letter is to be capital */
-unsigned int textto = 0;		/* for printing to an array        */
-int SCREENWIDTH, SCREENHEIGHT;		/* screen dimensions               */
-					/*   (in pixels or characters)     */
+unsigned int textto = 0;		/* for printing to an array		*/
+int SCREENWIDTH, SCREENHEIGHT;		/* screen dimensions			   */
+					/*   (in pixels or characters)	 */
 int physical_windowwidth,		/* "physical_..." measurements	   */
 	physical_windowheight,		/*   are in pixels (or characters) */
 	physical_windowtop, physical_windowleft,
@@ -126,11 +126,11 @@ char leftquote = true;
 char skipping_more = false;
 
 /* SaveUndo() and Undo() */
-int undostack[MAXUNDO][5];		/* for saving undo information     */
-int undoptr = 0;                        /* number of operations undoable   */
-int undoturn = 0;                       /* number of operations this turn  */
-char undoinvalid = 0;                   /* for start of game, and restarts */
-char undorecord = 0;                    /* true when recording             */
+int undostack[MAXUNDO][5];		/* for saving undo information	 */
+int undoptr = 0;						/* number of operations undoable   */
+int undoturn = 0;					   /* number of operations this turn  */
+char undoinvalid = 0;				   /* for start of game, and restarts */
+char undorecord = 0;					/* true when recording			 */
 
 #ifdef USE_TEXTBUFFER
 static int bufferbreak = 0, bufferbreaklen = 0;
@@ -339,7 +339,7 @@ AddFontCode:
 					}
 					continue;
 				}
-				case '_':       /* forced space */
+				case '_':	   /* forced space */
 				{
 					if (textto) c = ' ';
 					else c = FORCED_SPACE;
@@ -383,7 +383,7 @@ AddFontCode:
 
 			if (i >= alen) return;
 
-			continue;       /* back to for (i=0; i<slen; i++) */
+			continue;	   /* back to for (i=0; i<slen; i++) */
 		}
 
 		printed_something = true;
@@ -640,7 +640,7 @@ int CallRoutine(unsigned int addr)
 
 	SetStackFrame(stack_depth, RUNROUTINE_BLOCK, 0, 0);
 
-	tempptr = codeptr;      /* store calling address */
+	tempptr = codeptr;	  /* store calling address */
 	ret = 0;
 
 #if defined (DEBUGGER)
@@ -710,7 +710,7 @@ unsigned int Dict()
 	unsigned int arr;
 	unsigned int pos = 2, loc;
 
-	codeptr += 2;                           /* "(" */
+	codeptr += 2;						   /* "(" */
 
 	if (MEM(codeptr)==PARSE_T || MEM(codeptr)==WORD_T)
 		strcpy(line, GetWord(GetValue()));
@@ -835,7 +835,7 @@ void FatalError(int n)
 #if defined (DEBUGGER)
 
 	if (routines > 0)
-        {
+		{
 		SwitchtoDebugger();
 
 		if (n==MEMORY_E) DebuggerFatal(D_MEMORY_ERROR);
@@ -932,7 +932,7 @@ void FileIO(void)
 	strcpy(fileiopath, GetWord(fnameval));
 #endif
 
-	if (iotype==WRITEFILE_T)        /* "writefile" */
+	if (iotype==WRITEFILE_T)		/* "writefile" */
 	{
 #if !defined (GLK)
 		/* stdio implementation */
@@ -949,7 +949,7 @@ void FileIO(void)
 #endif
 		ioblock = 1;
 	}
-	else                            /* "readfile"  */
+	else							/* "readfile"  */
 	{
 #if !defined (GLK)
 		/* stdio implementation */
@@ -988,12 +988,14 @@ void FileIO(void)
 	ioblock = 0;
 
 #if defined (__EMSCRIPTEN__)
-    if (strcmp(fileiopath, OPCODE_CONTROL_FILE) != 0 && iotype==WRITEFILE_T) {
-        // tell the frontend that we're reading opcode data
-        EM_ASM(
-            hugoui.process_opcode_file();
-        );
-    }
+	if (strcmp(fileiopath, OPCODE_CONTROL_FILE) != 0 && iotype==WRITEFILE_T) {
+		// tell the frontend that we're reading opcode data
+		EM_ASM(
+			if( hugoui.opcodes ) {
+				hugoui.opcodes.process();
+			}
+		);
+	}
 #endif
 
 LeaveFileIO:
@@ -1126,7 +1128,7 @@ char *GetText(long textaddr)
 {
 	static char g[1025];
 	int i, a;
-	int tdatal, tdatah, tlen;       /* low byte, high byte, length */
+	int tdatal, tdatah, tlen;	   /* low byte, high byte, length */
 
 
 	/* Read the string from memory... */
@@ -1349,7 +1351,7 @@ void LoadGame(void)
 		sprintf(line, "Hugo Compiler v%d.%d or later required.\n", HEVERSION, HEREVISION);
 		if (game_version>0)
 #if defined (__EMSCRIPTEN__)
-        // The filename is a potentially confusing placeholder
+		// The filename is a potentially confusing placeholder
 			sprintf(line+strlen(line), "File is v%d.%d.\n", game_version/10, game_version%10);
 #else
 			sprintf(line+strlen(line), "File \"%s\" is v%d.%d.\n", gamefile, game_version/10, game_version%10);
@@ -1374,7 +1376,7 @@ void LoadGame(void)
 #endif
 
 #if defined (__EMSCRIPTEN__)
-        // The filename is a potentially confusing placeholder
+		// The filename is a potentially confusing placeholder
 		sprintf(line, "File is incorrect or unknown version.\n");
 #else
 		sprintf(line, "File \"%s\" is incorrect or unknown version.\n", gamefile);
@@ -1388,7 +1390,7 @@ void LoadGame(void)
 		hugo_closefiles();
 		hugo_blockfree(mem);
 		mem = NULL;
-		exit(OPEN_E);           /* ditto */
+		exit(OPEN_E);		   /* ditto */
 	}
 
 	hugo_settextpos(1, physical_windowheight/lineheight);
@@ -1467,14 +1469,14 @@ void LoadGame(void)
 	dicttable  = PeekWord(H_DICTTABLE) + gameseg;
 	syntable   = PeekWord(H_SYNTABLE) + gameseg;
 
-	initaddr       = PeekWord(H_INIT);
-	mainaddr       = PeekWord(H_MAIN);
-	parseaddr      = PeekWord(H_PARSE);
+	initaddr	   = PeekWord(H_INIT);
+	mainaddr	   = PeekWord(H_MAIN);
+	parseaddr	  = PeekWord(H_PARSE);
 	parseerroraddr = PeekWord(H_PARSEERROR);
 	findobjectaddr = PeekWord(H_FINDOBJECT);
-	endgameaddr    = PeekWord(H_ENDGAME);
-	speaktoaddr    = PeekWord(H_SPEAKTO);
-	performaddr    = PeekWord(H_PERFORM);
+	endgameaddr	= PeekWord(H_ENDGAME);
+	speaktoaddr	= PeekWord(H_SPEAKTO);
+	performaddr	= PeekWord(H_PERFORM);
 
 
 	/* Read totals: */
@@ -1530,7 +1532,7 @@ void LoadGame(void)
 
 #if !defined (GLK)	/* ParseCommandLine() is omitted for Glk */
 
-signed char def_fcolor    = DEF_FCOLOR;
+signed char def_fcolor	= DEF_FCOLOR;
 signed char def_bgcolor   = DEF_BGCOLOR;
 signed char def_slfcolor  = DEF_SLFCOLOR;
 signed char def_slbgcolor = DEF_SLBGCOLOR;
@@ -1545,25 +1547,25 @@ void ParseCommandLine(int argc, char *argv[])
 	/* Parse comand line options (colour switches) */
 	while ((ch = getopt(argc, argv, "f:b:F:B:?h")) != -1) {
 	  switch (ch) {
-	    case 'f':
-	      def_fcolor = atoi(optarg);
-	      break;
-	    case 'b':
-	      def_bgcolor = atoi(optarg);
-	      break;
-	    case 'F':
-	      def_slfcolor = atoi(optarg);
-	      break;
-	    case 'B':
-	      def_slbgcolor = atoi(optarg);
-	      break;
-	    case 'h':
-	    case '?':
-	    default:
-	      Banner();
-	      if (mem) hugo_blockfree(mem);
-	      mem = NULL;
-	      exit(0);
+		case 'f':
+		  def_fcolor = atoi(optarg);
+		  break;
+		case 'b':
+		  def_bgcolor = atoi(optarg);
+		  break;
+		case 'F':
+		  def_slfcolor = atoi(optarg);
+		  break;
+		case 'B':
+		  def_slbgcolor = atoi(optarg);
+		  break;
+		case 'h':
+		case '?':
+		default:
+		  Banner();
+		  if (mem) hugo_blockfree(mem);
+		  mem = NULL;
+		  exit(0);
 	  }
 	}
 	if ( optind < argc ) {
@@ -1963,7 +1965,7 @@ void PromptMore(void)
 
 	/* Make sure we fit in a window */
 	if (physical_windowwidth/FIXEDCHARWIDTH >= 19)
-		hugo_print("     [MORE...]     ");
+		hugo_print("	 [MORE...]	 ");
 	else
 		hugo_print("[MORE...]");
 
@@ -1996,7 +1998,7 @@ void PromptMore(void)
 		hugo_setbackcolor(bgcolor);
 #endif
 
-	if (playback && k==27)         /* if ESC is pressed during playback */
+	if (playback && k==27)		 /* if ESC is pressed during playback */
 	{
 		if (fclose(playback))
 			FatalError(READ_E);
@@ -2010,11 +2012,11 @@ void PromptMore(void)
 	current_text_y = physical_windowbottom - lineheight;
 	/* Make sure we fit in a window */
 	if (physical_windowwidth/FIXEDCHARWIDTH >= 19)
-		hugo_print("                    ");
+		hugo_print("					");
 	else
-		hugo_print("         ");
+		hugo_print("		 ");
 #else
-	hugo_print("         ");
+	hugo_print("		 ");
 #endif
 	hugo_font(currentfont = tempcurrentfont);
 
@@ -2120,13 +2122,13 @@ int RecordCommands(void)
 
 	Formats:
 
-	end of turn:    (0, undoturn, 0, 0, 0)
-	move obj.:      (MOVE_T, obj., parent, 0, 0)
-	property:       (PROP_T, obj., prop., # or PROP_ROUTINE, val.)
-	attribute:      (ATTR_T, obj., attr., 0 or 1, 0)
-	variable:       (VAR_T, var., value, 0, 0)
-	array:          (ARRAYDATA_T, array addr., element, val., 0)
-	dict:           (DICT_T, entry length, 0, 0, 0)
+	end of turn:	(0, undoturn, 0, 0, 0)
+	move obj.:	  (MOVE_T, obj., parent, 0, 0)
+	property:	   (PROP_T, obj., prop., # or PROP_ROUTINE, val.)
+	attribute:	  (ATTR_T, obj., attr., 0 or 1, 0)
+	variable:	   (VAR_T, var., value, 0, 0)
+	array:		  (ARRAYDATA_T, array addr., element, val., 0)
+	dict:		   (DICT_T, entry length, 0, 0, 0)
 	word setting:   (WORD_T, word number, new word, 0, 0)
 */
 
@@ -2136,7 +2138,7 @@ void SaveUndo(int a, int b, int c, int d, int e)
 
 	if (undorecord)
 	{
-		undostack[undoptr][0] = a;      /* save the operation */
+		undostack[undoptr][0] = a;	  /* save the operation */
 		undostack[undoptr][1] = b;
 		undostack[undoptr][2] = c;
 		undostack[undoptr][3] = d;
@@ -2150,7 +2152,7 @@ void SaveUndo(int a, int b, int c, int d, int e)
 		undostack[undoptr][1] = 0;
 		undoptr = tempptr;
 
-		if (++undoturn==MAXUNDO)        /* turn too complex */
+		if (++undoturn==MAXUNDO)		/* turn too complex */
 			{undoptr = 0;
 			undoturn = MAXUNDO;
 			undoinvalid = 1;}
@@ -2162,9 +2164,9 @@ void SaveUndo(int a, int b, int c, int d, int e)
 
 /* SETSTACKFRAME
 
-        Properly sets up the code_block structure for the current stack
-        depth depending on if this is a called block (RUNROUTINE_BLOCK)
-        or otherwise.
+		Properly sets up the code_block structure for the current stack
+		depth depending on if this is a called block (RUNROUTINE_BLOCK)
+		or otherwise.
 */
 
 void SetStackFrame(int depth, int type, long brk, long returnaddr)
@@ -2256,7 +2258,7 @@ char SpecialChar(char *a, int *i)
 
 	switch (r)
 	{
-		case '`':               /* accent grave */
+		case '`':			   /* accent grave */
 		{
 			/* Note that the "s = '...'" characters are
 			   Latin-1 and may not display properly under,
@@ -2280,7 +2282,7 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case '\'':              /* accent acute */
+		case '\'':			  /* accent acute */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
@@ -2302,7 +2304,7 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case '~':               /* tilde */
+		case '~':			   /* tilde */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
@@ -2318,7 +2320,7 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case '^':               /* circumflex */
+		case '^':			   /* circumflex */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
@@ -2338,7 +2340,7 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case ':':               /* umlaut */
+		case ':':			   /* umlaut */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
@@ -2359,7 +2361,7 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case ',':               /* cedilla */
+		case ',':			   /* cedilla */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
@@ -2371,61 +2373,61 @@ char SpecialChar(char *a, int *i)
 #endif
 			break;
 		}
-		case '<':               /* Spanish left quotation marks */
+		case '<':			   /* Spanish left quotation marks */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xab; /* � */
 #endif
 			break;
-		case '>':               /* Spanish right quotation marks */
+		case '>':			   /* Spanish right quotation marks */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xbb; /* � */
 			break;
 #endif
-		case '!':               /* upside-down exclamation mark */
+		case '!':			   /* upside-down exclamation mark */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xa1; /* � */
 #endif
 			break;
-		case '?':               /* upside-down question mark */
+		case '?':			   /* upside-down question mark */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xbf; /* � */
 #endif
 			break;
-		case 'a':               /* ae ligature */
+		case 'a':			   /* ae ligature */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xe6; ++*i; /* � */
 #else
 			s = 'e'; ++*i;
 #endif
 			break;
-		case 'A':               /* AE ligature */
+		case 'A':			   /* AE ligature */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xc6; ++*i; /* � */
 #else
 			s = 'E'; ++*i;
 #endif
 			break;
-		case 'c':               /* cents symbol */
+		case 'c':			   /* cents symbol */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xa2; /* � */
 #endif
 			break;
-		case 'L':               /* British pound */
+		case 'L':			   /* British pound */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xa3; /* � */
 #endif
 			break;
-		case 'Y':               /* Japanese Yen */
+		case 'Y':			   /* Japanese Yen */
 #ifndef NO_LATIN1_CHARSET
 			s = (char)0xa5; /* � */
 #endif
 			break;
-		case '-':               /* em dash */
+		case '-':			   /* em dash */
 #ifndef NO_LATIN1_CHARSET
 			/* s = (char)0x97; */ /* � */
 #endif
 			break;
-		case '#':               /* 3-digit decimal code */
+		case '#':			   /* 3-digit decimal code */
 		{
 			s = (char)((a[++*i]-'0')*100);
 			s += (a[++*i]-'0')*10;
@@ -2467,7 +2469,7 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 		return tempfile;
 	}
 
-	hugo_splitpath(f, drive, dir, fname, ext);      /* file to open */
+	hugo_splitpath(f, drive, dir, fname, ext);	  /* file to open */
 
 	/* If the given filename doesn't already specify where to find it */
 	if (!strcmp(drive, "") && !strcmp(dir, ""))
@@ -2477,12 +2479,12 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 
 		if ((tempfile = HUGO_FOPEN(temppath, p)))
 		{
-			strcpy(f, temppath);    /* the new pathname */
+			strcpy(f, temppath);	/* the new pathname */
 			return tempfile;
 		}
 
 		/* Check environment variables */
-		strcpy(envvar, "hugo_");        /* the actual var. name */
+		strcpy(envvar, "hugo_");		/* the actual var. name */
 		strcat(envvar, d);
 
 		if (getenv(strupr(envvar)))
@@ -2497,7 +2499,7 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 		}
 	}
 
-	return NULL;            /* return NULL if not openable */
+	return NULL;			/* return NULL if not openable */
 }
 
 #endif	/* GLK */
@@ -2674,10 +2676,9 @@ static int rand_index1, rand_index2;
 
 int random()
 {
-    rand_index1 = (rand_index1 + 1) % 55;
-    rand_index2 = (rand_index2 + 1) % 55;
-    rand_table[rand_index1] = rand_table[rand_index1] - rand_table[rand_index2];
-    return rand_table[rand_index1];
+	rand_index1 = (rand_index1 + 1) % 55;
+	rand_index2 = (rand_index2 + 1) % 55;
+	rand_table[rand_index1] = rand_table[rand_index1] - rand_table[rand_index2];
 }
 
 void srandom(int seed)

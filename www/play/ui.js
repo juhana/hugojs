@@ -6,3 +6,4 @@
  */
 
 document.write( '<script src="ui/hugo.js"></script>' );
+document.write( '<script src="ui/opcodes.js"></script>' );
