@@ -5,7 +5,8 @@
   "scripts": {
     "build": "rm -rf release; mkdir -p release/play; cp www/* release/; cp www/play/* release/play/; cp ../vorple/build/haven/haven.min.js release/play/haven.js; uglifyjs www/play/ui/hugo.js -o release/play/ui.js -c --screw-ie8; zip -j release/hugojs.zip release/play/*",
     "compile": "cd he; emmake make; emcc -DGCC_UNIX -s ASYNCIFY=1 -s NO_EXIT_RUNTIME=1 -O3 -o ../www/play/he.js he.o hejs.o heexpr.o hemisc.o heobject.o heparse.o heres.o herun.o heset.o stringfn.o; rm *.o he; cd ..",
-    "lint": "jshint www/play/ui/*.js"
+    "lint": "jshint www/play/ui/*.js",
+    "start": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,15 @@
   },
   "homepage": "https://github.com/juhana/hugojs#readme",
   "devDependencies": {
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.1",
     "jshint": "^2.9.4",
-    "uglify-js": "^2.7.5"
+    "uglify-js": "^2.7.5",
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
+  },
+  "dependencies": {
+    "css-loader": "^0.28.11",
+    "style-loader": "^0.20.3"
   }
 }
