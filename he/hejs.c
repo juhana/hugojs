@@ -77,7 +77,7 @@ int hugo_hasgraphics(void);
 int hcount = 0;
 char *history[HISTORY_SIZE];
 
-char autosave_filename[] = "";
+char autosave_filename[50] = "";
 
 
 /*
