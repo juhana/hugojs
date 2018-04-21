@@ -17,24 +17,16 @@ are in the wiki:
 
 The build scripts are made for a Unix environment (Linux/MacOS). To use them
 you need [npm](https://www.npmjs.com/). `npm install` installs 
-[JSHint](http://jshint.com/) and [UglifyJS2](http://lisperator.net/uglifyjs/).
-JSHint is needed for code style analysis and Uglify to minify the JavaScript
-files for deployment.
-
-The www/play directory can be deployed as such (with he.js, see the next 
-chapter) so the build scripts or any special setup isn't strictly necessary. 
+[Webpack](https://webpack.js.org/) that builds the final package.
 
 
 ### C engine
 
-The repository includes all necessary JavaScript files except he.js which is the
-official Hugo interpreter engine that has been compiled from C to JavaScript
-with [Emscripten](http://emscripten.org/). If you don't need to modify the
-engine, you can download the compiled [he.js](http://textadventures.online/play/he.js) 
-and [he.js.mem](http://textadventures.online/play/he.js.mem) files and place them 
-in the www/play directory.
+engine.* files in the assets directory are the official Hugo interpreter engine
+that has been compiled from C to JavaScript with
+[Emscripten](http://emscripten.org/).
 
-In the repository's "he" directory, [hejs.c](he/hejs.c) contains most of 
+In the repository's "he" directory [hejs.c](he/hejs.c) contains most of
 HugoJS-specific C code. It's mainly responsible for communication between the 
 engine and the user interface. C project setup is at the start of 
 [heheader.h](he/heheader.h). There are other minor changes here and there in 
@@ -47,22 +39,21 @@ The npm script `npm run compile` transpiles the C code into JavaScipt.
 
 ### User interface
 
-The JavaScript user interface sources are in the www/play/ui directory.
+The JavaScript user interface sources are in the src directory.
 
-* file.js: internal (virtual file system) and external (loading game files from
-the Internet) file managing
-* input.js: handles user input and passing it to the engine
-* output.js: printing and formatting game output 
-* utility.js: miscellaneous utility functions
+* index.js: loads the necessary files and bootstraps the system
+* hugo.js: HugoJS-specific code
+* opcodes.js: special community-extended Hugo opcodes
 
-In the www/play directory the bootstrap.js file has the setup required by
-Emscripten.
+[Haven](https://github.com/vorple/haven) is the actual JavaScript interpreter
+that handles the game output. It's included as a git submodule.
 
-The project can be built with npm.
+The project can be built with Webpack. The command `npm start` starts Webpack
+in watch mode (recompiles every time source files change.) Note that Webpack
+doesn't watch the Emscripten engine files so you need to rebuild manually if
+you recompile the Hugo engine.
 
-    npm run build
-     
-The npm build script creates a release directory where it copies necessary 
+Webpack creates a directory called "dist" where it copies necessary
 files and minifies the scripts.
 
 The third npm script is `npm run lint` which runs the source files through
