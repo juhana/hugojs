@@ -30,5 +30,8 @@
     "uglify-js": "^3.3.22",
     "webpack": "^4.6.0",
     "webpack-cli": "^2.0.15"
+  },
+  "dependencies": {
+    "custom-event-polyfill": "^0.3.0"
   }
 }
