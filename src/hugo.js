@@ -142,7 +142,7 @@ export function initScreen() {
     }
 
     sendWindowDimensions();
-};
+}
 
 
 /**
