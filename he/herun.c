@@ -9,6 +9,7 @@
 */
 
 
+#include <emscripten.h>
 #include "heheader.h"
 
 /* Function prototypes: */
@@ -30,6 +31,7 @@ char during_player_input = false;
 char override_full = 0;
 
 char game_reset = false;		/* for restore, undo, etc. */
+char game_ended = false;		/* separate flag to prevent Haven autosaves outside main game loop */
 
 struct CODE_BLOCK code_block[MAXSTACKDEPTH];
 int stack_depth;
@@ -226,6 +228,7 @@ RestartDebugger:
 
 Start:
 	stack_depth = 0;
+	game_ended = false;
 
 	strcpy(errbuf, "");
 	strcpy(oops, "");
@@ -664,6 +667,7 @@ EndofCommand:
 	}
 	while (true);   /* endless loop back to start */
 
+	game_ended = true;
 	undorecord = false;
 
 	if (var[endflag]==-1)
@@ -689,6 +693,12 @@ EndofCommand:
 
 	Flushpbuffer();
 
+#ifdef __EMSCRIPTEN__
+	/* Delete the autosave */
+	EM_ASM(
+		haven.state.autosave.remove();
+	);
+#endif
 
 	/* Run the user Endgame routine if one exists */
 

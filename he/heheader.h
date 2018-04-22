@@ -1199,6 +1199,7 @@ extern int passlocal[];
 extern int arguments_passed;
 extern int ret; extern char retflag;
 extern char game_reset;
+extern char game_ended;
 extern struct CODE_BLOCK code_block[];
 extern int stack_depth;
 extern int tail_recursion;

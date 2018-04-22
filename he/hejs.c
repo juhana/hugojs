@@ -926,6 +926,10 @@ int RestoreGameData(void);
 int SaveGameData(void);
 
 int EMSCRIPTEN_KEEPALIVE haven_save_autosave(char *filename) {
+	if( game_ended ) {
+		return 0;
+	}
+
     if (!(save = HUGO_FOPEN(filename, "w+b"))) return 0;
 	if (!SaveGameData()) goto SaveError;
 
