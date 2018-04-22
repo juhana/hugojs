@@ -1,11 +1,11 @@
-import { addCallback } from "./haven/assets";
-import { get as getOption } from "./haven/options";
-
-
 /**
  * Support for non-standard opcodes.
  */
-const OPCODE_CONTROL_FILE = "OpCtlAPI";
+
+import { addCallback } from "./haven/assets";
+import { get as getOption } from "./haven/options";
+
+const OPCODE_CONTROL_FILE = "HrCtlAPI";
 const OPCODE_CHECK_FILE = "OpCheck";
 
 
@@ -18,8 +18,7 @@ export function init() {
             if( getOption( 'extra_opcodes' ) ) {
                 FS.writeFile(
                     OPCODE_CHECK_FILE,
-                    [ 89, 47 ],   // == 12121
-                    {encoding: 'binary'}
+                    new Uint8Array([ 89, 47 ])   // == 12121
                 );
             }
             else {
@@ -30,10 +29,16 @@ export function init() {
                 }
             }
 
+            try {
+                FS.unlink( OPCODE_CONTROL_FILE );
+            }
+            catch(e) {
+            }
+
             FS.syncfs( false, done );
         } );
     } );
-};
+}
 
 /**
  * The engine has written to the opcode file. See what's in it,
@@ -58,7 +63,7 @@ export function process() {
     };
 
     const writeResponse = function() {
-        FS.writeFile( OPCODE_CONTROL_FILE, response, {encoding: 'binary'} );
+        FS.writeFile( OPCODE_CONTROL_FILE, new Uint8Array( response ) );
     };
 
     // odd number of bytes in the input, should never happen

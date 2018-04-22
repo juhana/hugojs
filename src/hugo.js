@@ -28,6 +28,7 @@ import {
 import * as _opcodes from "./opcodes";
 export const opcodes = _opcodes;
 
+
 /**
  * Clear target window, or if omitted, the entire screen.
  *
@@ -74,7 +75,7 @@ export const font = {
 /**
  * Called by the engine when the game has ended.
  */
-export const gameEnded = function() {
+export function gameEnded() {
     // delete the autosave file
     if( getOption( 'autosave' ) ) {
         autosave.remove();
@@ -94,13 +95,13 @@ export const gameEnded = function() {
             window.location = getOption( 'exit_url' );
         }
     }
-};
+}
 
 
 /**
  * Initialize HugoJS methods and start Haven
  */
-export const init = function() {
+export function init() {
     start( {
         // Hugo engine decides text and background colors
         engineColors: true,
@@ -123,10 +124,8 @@ export const init = function() {
         virtualStoryfile: 'game.hex'
     } );
 
-    if( window.opcodes ) {
-        window.opcodes.init();
-    }
-};
+    opcodes.init();
+}
 
 
 /**
