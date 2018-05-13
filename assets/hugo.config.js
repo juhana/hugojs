@@ -14,6 +14,10 @@ window.hugojs_options = {
     // disallow supplying the story file in the URL?
     lock_story: false,
 
+    // allow the user to upload a story file directly if URL isn't supplied?
+    // Always disabled if lock_story is true.
+    allow_upload: true,
+
     // URL to the CORS proxy script for loading cross-origin game files.
     // %s is replaced by the requested game file's URL.
     proxy_url: "https://proxy.iplayif.com/proxy/?url=%s",

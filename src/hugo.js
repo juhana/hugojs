@@ -1,21 +1,26 @@
-import { append as appendToBuffer } from "./haven/buffer";
-import { start } from "./haven/haven";
+import {append as appendToBuffer} from "./haven/buffer";
+import {start} from "./haven/haven";
+import { get } from "./haven/options";
 
 import {
     getTextWasPrinted,
     setMode
 } from "./haven/input";
 
-import { get as getOption } from "./haven/options";
+import {
+    get as getOption,
+    getParameter,
+    set as setOption
+} from "./haven/options";
 
 import {
     autosave,
-    restoreUI as restoreHavenUI 
+    restoreUI as restoreHavenUI
 } from "./haven/state";
 
-import { 
-    color as colors, 
-    set as setStyle 
+import {
+    color as colors,
+    set as setStyle
 } from "./haven/style";
 
 import {
@@ -26,6 +31,7 @@ import {
 } from "./haven/window";
 
 import * as _opcodes from "./opcodes";
+
 export const opcodes = _opcodes;
 
 
@@ -102,31 +108,66 @@ export function gameEnded() {
  * Initialize HugoJS methods and start Haven
  */
 export function init() {
-    start( {
-        // Hugo engine decides text and background colors
-        engineColors: true,
+    const ready = function() {
+        start( {
+            // Hugo engine decides text and background colors
+            engineColors: true,
 
-        // the Hugo engine will handle printing the prompt,
-        // as opposed to Vorple that uses a custom prompt
-        enginePrompt: true,
+            // the Hugo engine will handle printing the prompt,
+            // as opposed to Vorple that uses a custom prompt
+            enginePrompt: true,
 
-        // let the Hugo engine set the font family
-        // (fixed width or proportional)
-        engineFontFamily: true,
+            // let the Hugo engine set the font family
+            // (fixed width or proportional)
+            engineFontFamily: true,
 
-        // user-provided options
-        options: hugojs_options,
+            // user-provided options
+            options: hugojs_options,
 
-        // no Unicode support
-        unicode: false,
+            // no Unicode support
+            unicode: false,
 
-        // the name of the story file in the virtual filesystem
-        virtualStoryfile: 'game.hex'
-    } );
+            // the name of the story file in the virtual filesystem
+            virtualStoryfile: 'game.hex'
+        } );
 
-    opcodes.init();
+        opcodes.init();
+    };
+
+    // let the user upload a game file unless one is already supplied
+    // and it's not been explicitly disallowed
+    if( hugojs_options.allow_upload && !hugojs_options.lock_story && !getParameter( 'story' ) ) {
+        const uploadContainer = document.createElement( "div" );
+        const header = document.createElement( "h2" );
+        const fileUpload = document.createElement( "input" );
+
+        uploadContainer.id = "uploadContainer";
+        header.textContent = "Upload Hugo story file (.hex)";
+
+        fileUpload.type = "file";
+        fileUpload.addEventListener( "change", function( e ) {
+            setOption( 'uploadedFile', this.files[ 0 ] );
+            ready();
+        });
+
+        document.getElementById( 'loader' ).style.display = "none";
+        uploadContainer.appendChild( header );
+        uploadContainer.appendChild( fileUpload );
+        document.body.appendChild( uploadContainer );
+    }
+    else {
+        ready();
+    }
+
 }
 
+function removeLoader() {
+    const loader = document.getElementById( 'loader' );
+
+    if( loader ) {
+        loader.parentNode.removeChild( loader );
+    }
+}
 
 /**
  * Send the current window dimensions back to the engine.
@@ -134,12 +175,7 @@ export function init() {
  * Called by the engine when it needs to init the display.
  */
 export function initScreen() {
-    const loader = document.getElementById( 'loader' );
-
-    if( loader ) {
-        loader.parentNode.removeChild( loader );
-    }
-
+    removeLoader();
     sendWindowDimensions();
 }
 
@@ -183,7 +219,6 @@ export function restoreUI() {
  */
 export function sendWindowDimensions() {
     const dimensions = measureDimensions();
-//        console.log( 'sending dimensions', dimensions);
 
     Module.ccall(
         'hugo_set_window_dimensions',

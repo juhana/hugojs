@@ -37,7 +37,12 @@
             </a>
         </li>
         <li role="presentation">
-            <a href="#about" aria-controls="link" role="tab" data-toggle="tab">
+            <a href="/play" role="tab">
+                Upload
+            </a>
+        </li>
+        <li role="presentation">
+            <a href="#about" aria-controls="about" role="tab" data-toggle="tab">
                 About
             </a>
         </li>
