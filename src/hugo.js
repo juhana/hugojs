@@ -1,9 +1,10 @@
-import {append as appendToBuffer} from "./haven/buffer";
-import {start} from "./haven/haven";
-import { get } from "./haven/options";
+import { append as appendToBuffer } from "./haven/buffer";
+import { start } from "./haven/haven";
+import { prompt } from "./haven/file";
 
 import {
     getTextWasPrinted,
+    keypress,
     setMode
 } from "./haven/input";
 
@@ -12,6 +13,11 @@ import {
     getParameter,
     set as setOption
 } from "./haven/options";
+
+import {
+    show as showPrompt,
+    waitLine as promptWaitLine
+} from "./haven/prompt";
 
 import {
     autosave,
@@ -57,6 +63,14 @@ export const color = {
         colors.set( which, newColor, hugoWindow );
     }
 };
+
+
+/**
+ * Save/restore prompts
+ */
+export function filePrompt( why ) {
+    return prompt( why );
+}
 
 
 export const font = {
@@ -210,7 +224,7 @@ export function print( text, hugoWindow ) {
  * Reset UI state after restore
  */
 export function restoreUI() {
-    restoreHavenUI();
+    return restoreHavenUI();
 }
 
 
@@ -238,11 +252,34 @@ export function sendWindowDimensions() {
 
 /**
  * Sets the window title. Called by the engine.
- *
- * @param title
  */
 export function setTitle( title ) {
-    setWindowTitle( title );
+    return setWindowTitle( title );
+}
+
+
+/**
+ * Starts waiting for a keypress
+ */
+export function waitKeypress() {
+    return keypress.wait();
+}
+
+
+/**
+ * Returns a promise that resolves when the player presses a key
+ */
+export function waitKeypressPromise() {
+    return keypress.waitPromise();
+}
+
+
+/**
+ * Starts waiting for line input
+ */
+export function waitLine() {
+    showPrompt();
+    return promptWaitLine();
 }
 
 

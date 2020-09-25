@@ -6,7 +6,7 @@ import { addCallback } from "./haven/assets";
 import { get as getOption } from "./haven/options";
 
 const OPCODE_CONTROL_FILE = "HrCtlAPI";
-const OPCODE_CHECK_FILE = "OpCheck";
+const OPCODE_CHECK_FILE = "HrCheck";
 
 
 /**
@@ -18,7 +18,7 @@ export function init() {
             if( getOption( 'extra_opcodes' ) ) {
                 FS.writeFile(
                     OPCODE_CHECK_FILE,
-                    new Uint8Array([ 89, 47 ])   // == 12121
+                    new Uint8Array([ 66, 66 ])   // == 16962
                 );
             }
             else {

@@ -3,9 +3,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
-    devtool: 'inline-source-map',
     entry: "./src/index.js",
-    mode: "development",
     module: {
         rules: [
             {

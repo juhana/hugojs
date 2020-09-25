@@ -1,7 +1,7 @@
 /*
-	HEBLANK.C
+	HEJS.C
 
-	Template for non-portable system-specific functions:
+	Emscripten port
 
 		hugo_blockalloc         hugo_clearfullscreen
 		hugo_blockfree          hugo_clearwindow
@@ -29,13 +29,6 @@
 	for the Hugo Engine
 
 	Copyright (c) 1995-2005 by Kent Tessman
-
-	NOTE:  In the simplest case, this should be portable to any
-	system by replacing each "..." section below with a function
-	that accomplishes the described task under the compiler/
-	system in question.
-	
-	Where possible, simple stdio routines are provided.
 */
 
 #include <emscripten.h>
@@ -191,7 +184,7 @@ void hugo_getfilename(char *a, char *b)
 	var[prompt] = 0;        /* null string */
 
 	EM_ASM_({
-	    hugoui.filePrompt(Pointer_stringify($0));
+	    hugoui.filePrompt(AsciiToString($0));
 	}, a);
 
 	RunInput();
@@ -259,6 +252,32 @@ void hugo_closefiles()
 */
 }
 
+EM_JS(char, haven_getkey, (), {
+	return Asyncify.handleAsync(async () => {
+		const key = await hugoui.waitKeypressPromise();
+
+		// convert JS arrow keycodes
+		switch( key ) {
+			case 0:
+				return 13;
+
+			case 37:
+				return 8;
+
+			case 38:
+				return 11;
+
+			case 39:
+				return 21;
+
+			case 40:
+				return 10;
+
+			default:
+				return key;
+		}
+	});
+});
 
 /* hugo_getkey
 
@@ -271,86 +290,46 @@ void hugo_closefiles()
 	left-arrow       8 (CTRL-H)
 	right-arrow     21 (CTRL-U)
 */
-
-int getkey_ready = 0;
-
-void EMSCRIPTEN_KEEPALIVE haven_getkey(s) {
-    int keycode;
-
-    // convert JS arrow keycodes
-    switch( s ) {
-        case 37:
-            keycode = 8;
-            break;
-
-        case 38:
-            keycode = 11;
-            break;
-
-        case 39:
-            keycode = 21;
-            break;
-
-        case 40:
-            keycode = 10;
-            break;
-
-        default:
-            keycode = s;
-            break;
-    }
-
-    buffer[0] = keycode;
-    buffer[1] = '\0';
-
-    getkey_ready = 1;
-}
-
 int hugo_getkey(void)
 {
     EM_ASM(
-        haven.input.keypress.wait();
+        hugoui.waitKeypress();
     );
 
-	while(!getkey_ready) {
-    	emscripten_sleep(30);
-	}
-	getkey_ready = 0;
-
-	if (buffer[0]=='\0' ) buffer[0] = 13;
+	buffer[0] = haven_getkey();
 
 	return buffer[0];
 }
+
+EM_JS(const char *, haven_getline, (), {
+	return Asyncify.handleAsync(async () => {
+		const s = await hugoui.waitLine();
+
+		// convert the JS string to a C string
+		const lengthBytes = lengthBytesUTF8(s)+1;
+		const stringOnWasmHeap = _malloc(lengthBytes);
+		stringToUTF8(s, stringOnWasmHeap, lengthBytes);
+		return stringOnWasmHeap;
+	});
+});
 
 
 /* hugo_getline
 
     Gets a line of input from the keyboard, storing it in <buffer>.
 */
-
-int getline_ready = 0;
-
-void EMSCRIPTEN_KEEPALIVE haven_getline(char *s) {
-    strcpy( buffer, s );
-    hugo_print(s);
-    getline_ready = 1;
-}
-
 void hugo_getline(char *p)
 {
     strcpy(buffer, "");
 	hugo_print(p);
 
-	EM_ASM(
-	    haven.prompt.show();
-	);
+	const char *s = haven_getline();
 
-	while(!getline_ready) {
-    	emscripten_sleep(30);
-	}
+	strcpy(buffer, s);
+	hugo_print(buffer);
 
-	getline_ready = 0;
 	buffer[strlen(buffer)-1] = '\0';
+	free(s);
 }
 
 
@@ -467,7 +446,7 @@ int hugo_hasgraphics(void)
 void hugo_setgametitle(char *t)
 {
     EM_ASM_({
-        hugoui.setTitle(Pointer_stringify($0));
+        hugoui.setTitle(AsciiToString($0));
     }, t);
 }
 
@@ -665,7 +644,7 @@ void hugo_print(char *a)
 	        hugoui.print(String.fromCharCode(256 + $1), $2);
 	    }
 	    else {
-	        hugoui.print(Pointer_stringify($0), $2);
+	        hugoui.print(AsciiToString($0), $2);
 	    }
     }, a, a[0], inwindow );
 }
@@ -880,7 +859,7 @@ int hugo_hasvideo(void)
 void hugo_stopvideo(void)
 {}
 
-int hugo_playvideo(HUGO_FILE infile, long reslength, char loop_flag)
+int hugo_playvideo(HUGO_FILE infile, long reslength, char loop_flag, char background, int volume)
 {
 	fclose(infile);
 	return true;	/* not an error */

@@ -3,31 +3,33 @@
 
 	Miscellaneous functions:
 
-		AP					  ParseCommandLine
-		CallRoutine			 PassLocals
+		AP                      ParseCommandLine
+		CallRoutine             PassLocals
 		ContextCommand		Peek, PeekWord
-		Dict					Poke, PokeWord
-		FatalError			  PrintHex
-		FileIO				  Printout
-		Flushpbuffer			PromptMore
-		GetCommand			  RecordCommands
-		GetString			   SaveUndo
-		GetText				 SetStackFrame
-		GetWord				 SetupDisplay
+		Dict                    Poke, PokeWord
+		FatalError              PrintHex
+		FileIO                  Printout
+		Flushpbuffer            PromptMore
+		GetCommand              RecordCommands
+		GetString               SaveUndo
+		GetText                 SetStackFrame
+		GetWord                 SetupDisplay
 		HandleTailRecursion	SpecialChar
-		InitGame				TrytoOpen
+		InitGame                TrytoOpen
 		LoadGame		Undo
 
 	for the Hugo Engine
 
-	Copyright (c) 1995-2006 by Kent Tessman
+	Copyright (c) 1995-2009 by Kent Tessman
 */
 
 #include <emscripten.h>
+
 #include "heheader.h"
+#include <stdlib.h>
 
 
-void Banner(void);					  	/* from he.c */
+void Banner(void);                      	/* from he.c */
 
 void hugo_stopmusic(void);
 void hugo_stopsample(void);
@@ -49,7 +51,7 @@ HUGO_FILE script = NULL;
 HUGO_FILE save = NULL;
 HUGO_FILE record = NULL;
 HUGO_FILE playback = NULL;
-HUGO_FILE io = NULL;	 char ioblock = 0; char ioerror = 0;
+HUGO_FILE io = NULL;     char ioblock = 0; char ioerror = 0;
 char gamefile[MAXPATH];
 char gamepath[MAXPATH];
 #if !defined (GLK)
@@ -62,26 +64,26 @@ char recordfile[MAXPATH];
 char id[3];
 char serial[9];
 unsigned int codestart;			/* start of executable code	*/
-unsigned int objtable;					/* object table			*/
-unsigned int eventtable;			  	/* event table			*/
-unsigned int proptable;			   	/* property table		*/
-unsigned int arraytable;			  	/* array data table		*/
-unsigned int dicttable;			   	/* dictionary			*/
-unsigned int syntable;					/* synonyms			*/
-unsigned int initaddr;					/* "Init" routine		*/
-unsigned int mainaddr;					/* "Main"			*/
-unsigned int parseaddr;			   	/* "Parse"			*/
-unsigned int parseerroraddr;		  	/* "ParseError"			*/
-unsigned int findobjectaddr;		  	/* "FindObject"			*/
-unsigned int endgameaddr;			 	/* "Endgame"			*/
-unsigned int speaktoaddr;			 	/* "SpeakTo"			*/
+unsigned int objtable;                	/* object table			*/
+unsigned int eventtable;              	/* event table			*/
+unsigned int proptable;               	/* property table		*/
+unsigned int arraytable;              	/* array data table		*/
+unsigned int dicttable;               	/* dictionary			*/
+unsigned int syntable;                	/* synonyms			*/
+unsigned int initaddr;                	/* "Init" routine		*/
+unsigned int mainaddr;                	/* "Main"			*/
+unsigned int parseaddr;               	/* "Parse"			*/
+unsigned int parseerroraddr;          	/* "ParseError"			*/
+unsigned int findobjectaddr;          	/* "FindObject"			*/
+unsigned int endgameaddr;             	/* "Endgame"			*/
+unsigned int speaktoaddr;             	/* "SpeakTo"			*/
 unsigned int performaddr;		/* "Perform"			*/
 
 /* Totals */
 int objects;
 int events;
 int dictcount;		/* dictionary entries */
-int syncount;		/* synonyms, etc.	 */
+int syncount;		/* synonyms, etc.     */
 
 #if !defined (COMPILE_V25)
 char context_command[MAX_CONTEXT_COMMANDS][64];
@@ -89,27 +91,27 @@ int context_commands;
 #endif
 
 /* Loaded memory image */
-unsigned char *mem = NULL;		/* the memory buffer	   */
-int loaded_in_memory = true;		/* i.e., the text bank	 */
+unsigned char *mem = NULL;		/* the memory buffer       */
+int loaded_in_memory = true;		/* i.e., the text bank     */
 unsigned int defseg;			/* holds segment indicator */
-unsigned int gameseg;			/* code segment			*/
-long codeptr;						   /* code pointer			*/
-long codeend;						   /* end of loaded code	  */
+unsigned int gameseg;			/* code segment            */
+long codeptr;                           /* code pointer            */
+long codeend;                           /* end of loaded code      */
 
 /* Text output */
-char pbuffer[MAXBUFFER*2+1];			/* print buffer for line-wrapping  */
-int currentpos = 0;					 /* column position (pixel or char) */
-int currentline = 0;					/* row number (line)			   */
-int full = 0;						   /* page counter for PromptMore	 */
+char pbuffer[MAXBUFFER*2+1];            /* print buffer for line-wrapping  */
+int currentpos = 0;                     /* column position (pixel or char) */
+int currentline = 0;                    /* row number (line)               */
+int full = 0;                           /* page counter for PromptMore     */
 signed char fcolor = 16,		/* default fore/background colors  */
 	bgcolor = 17,			/* (16 = default foreground,	   */
 	icolor = -1;			/*  17 = default background)	   */
 signed char default_bgcolor = 17;	/* default for screen background   */
-int currentfont = NORMAL_FONT;		/* current font bitmasks		   */
+int currentfont = NORMAL_FONT;		/* current font bitmasks           */
 char capital = 0;			/* if next letter is to be capital */
-unsigned int textto = 0;		/* for printing to an array		*/
-int SCREENWIDTH, SCREENHEIGHT;		/* screen dimensions			   */
-					/*   (in pixels or characters)	 */
+unsigned int textto = 0;		/* for printing to an array        */
+int SCREENWIDTH, SCREENHEIGHT;		/* screen dimensions               */
+					/*   (in pixels or characters)     */
 int physical_windowwidth,		/* "physical_..." measurements	   */
 	physical_windowheight,		/*   are in pixels (or characters) */
 	physical_windowtop, physical_windowleft,
@@ -126,11 +128,11 @@ char leftquote = true;
 char skipping_more = false;
 
 /* SaveUndo() and Undo() */
-int undostack[MAXUNDO][5];		/* for saving undo information	 */
-int undoptr = 0;						/* number of operations undoable   */
-int undoturn = 0;					   /* number of operations this turn  */
-char undoinvalid = 0;				   /* for start of game, and restarts */
-char undorecord = 0;					/* true when recording			 */
+int undostack[MAXUNDO][5];		/* for saving undo information     */
+int undoptr = 0;                        /* number of operations undoable   */
+int undoturn = 0;                       /* number of operations this turn  */
+char undoinvalid = 0;                   /* for start of game, and restarts */
+char undorecord = 0;                    /* true when recording             */
 
 #ifdef USE_TEXTBUFFER
 static int bufferbreak = 0, bufferbreaklen = 0;
@@ -339,7 +341,7 @@ AddFontCode:
 					}
 					continue;
 				}
-				case '_':	   /* forced space */
+				case '_':       /* forced space */
 				{
 					if (textto) c = ' ';
 					else c = FORCED_SPACE;
@@ -383,7 +385,7 @@ AddFontCode:
 
 			if (i >= alen) return;
 
-			continue;	   /* back to for (i=0; i<slen; i++) */
+			continue;       /* back to for (i=0; i<slen; i++) */
 		}
 
 		printed_something = true;
@@ -475,7 +477,7 @@ AddFontCode:
 	/* Check to see if we've overrun the current line */
 
 #ifndef __EMSCRIPTEN__
-		if ( thisline+cwidth+currentpos > physical_windowwidth)
+		if (thisline+cwidth+currentpos > physical_windowwidth)
 		{
 			char t;
 
@@ -640,7 +642,7 @@ int CallRoutine(unsigned int addr)
 
 	SetStackFrame(stack_depth, RUNROUTINE_BLOCK, 0, 0);
 
-	tempptr = codeptr;	  /* store calling address */
+	tempptr = codeptr;      /* store calling address */
 	ret = 0;
 
 #if defined (DEBUGGER)
@@ -710,7 +712,7 @@ unsigned int Dict()
 	unsigned int arr;
 	unsigned int pos = 2, loc;
 
-	codeptr += 2;						   /* "(" */
+	codeptr += 2;                           /* "(" */
 
 	if (MEM(codeptr)==PARSE_T || MEM(codeptr)==WORD_T)
 		strcpy(line, GetWord(GetValue()));
@@ -835,7 +837,7 @@ void FatalError(int n)
 #if defined (DEBUGGER)
 
 	if (routines > 0)
-		{
+        {
 		SwitchtoDebugger();
 
 		if (n==MEMORY_E) DebuggerFatal(D_MEMORY_ERROR);
@@ -932,7 +934,7 @@ void FileIO(void)
 	strcpy(fileiopath, GetWord(fnameval));
 #endif
 
-	if (iotype==WRITEFILE_T)		/* "writefile" */
+	if (iotype==WRITEFILE_T)        /* "writefile" */
 	{
 #if !defined (GLK)
 		/* stdio implementation */
@@ -949,7 +951,7 @@ void FileIO(void)
 #endif
 		ioblock = 1;
 	}
-	else							/* "readfile"  */
+	else                            /* "readfile"  */
 	{
 #if !defined (GLK)
 		/* stdio implementation */
@@ -960,7 +962,14 @@ void FileIO(void)
 
 		fref = glk_fileref_create_by_name(fileusage_Data | fileusage_BinaryMode,
 			fileiopath, 0);
-		io = glk_stream_open_file(fref, filemode_Read, 0);
+		if (glk_fileref_does_file_exist(fref))
+		{
+			io = glk_stream_open_file(fref, filemode_Read, 0);
+		}
+		else
+		{
+			io = NULL;
+		}
 		glk_fileref_destroy(fref);
 		if (io==NULL) goto LeaveFileIO;
 #endif
@@ -988,8 +997,8 @@ void FileIO(void)
 	ioblock = 0;
 
 #if defined (__EMSCRIPTEN__)
-	if (strcmp(fileiopath, OPCODE_CONTROL_FILE) != 0 && iotype==WRITEFILE_T) {
-		// tell the frontend that we're reading opcode data
+	if (strcmp(fileiopath, OPCODE_CONTROL_FILE)==0 && iotype==WRITEFILE_T && ioerror==0) {
+		// tell the frontend that we're writing opcode data
 		EM_ASM(
 			if( hugoui.opcodes ) {
 				hugoui.opcodes.process();
@@ -1128,7 +1137,7 @@ char *GetText(long textaddr)
 {
 	static char g[1025];
 	int i, a;
-	int tdatal, tdatah, tlen;	   /* low byte, high byte, length */
+	int tdatal, tdatah, tlen;       /* low byte, high byte, length */
 
 
 	/* Read the string from memory... */
@@ -1351,7 +1360,7 @@ void LoadGame(void)
 		sprintf(line, "Hugo Compiler v%d.%d or later required.\n", HEVERSION, HEREVISION);
 		if (game_version>0)
 #if defined (__EMSCRIPTEN__)
-		// The filename is a potentially confusing placeholder
+			// The filename is a potentially confusing placeholder
 			sprintf(line+strlen(line), "File is v%d.%d.\n", game_version/10, game_version%10);
 #else
 			sprintf(line+strlen(line), "File \"%s\" is v%d.%d.\n", gamefile, game_version/10, game_version%10);
@@ -1390,7 +1399,7 @@ void LoadGame(void)
 		hugo_closefiles();
 		hugo_blockfree(mem);
 		mem = NULL;
-		exit(OPEN_E);		   /* ditto */
+		exit(OPEN_E);           /* ditto */
 	}
 
 	hugo_settextpos(1, physical_windowheight/lineheight);
@@ -1469,14 +1478,14 @@ void LoadGame(void)
 	dicttable  = PeekWord(H_DICTTABLE) + gameseg;
 	syntable   = PeekWord(H_SYNTABLE) + gameseg;
 
-	initaddr	   = PeekWord(H_INIT);
-	mainaddr	   = PeekWord(H_MAIN);
-	parseaddr	  = PeekWord(H_PARSE);
+	initaddr       = PeekWord(H_INIT);
+	mainaddr       = PeekWord(H_MAIN);
+	parseaddr      = PeekWord(H_PARSE);
 	parseerroraddr = PeekWord(H_PARSEERROR);
 	findobjectaddr = PeekWord(H_FINDOBJECT);
-	endgameaddr	= PeekWord(H_ENDGAME);
-	speaktoaddr	= PeekWord(H_SPEAKTO);
-	performaddr	= PeekWord(H_PERFORM);
+	endgameaddr    = PeekWord(H_ENDGAME);
+	speaktoaddr    = PeekWord(H_SPEAKTO);
+	performaddr    = PeekWord(H_PERFORM);
 
 
 	/* Read totals: */
@@ -1532,7 +1541,7 @@ void LoadGame(void)
 
 #if !defined (GLK)	/* ParseCommandLine() is omitted for Glk */
 
-signed char def_fcolor	= DEF_FCOLOR;
+signed char def_fcolor    = DEF_FCOLOR;
 signed char def_bgcolor   = DEF_BGCOLOR;
 signed char def_slfcolor  = DEF_SLFCOLOR;
 signed char def_slbgcolor = DEF_SLBGCOLOR;
@@ -1540,32 +1549,32 @@ signed char def_slbgcolor = DEF_SLBGCOLOR;
 void ParseCommandLine(int argc, char *argv[])
 {
 	char drive[MAXDRIVE], dir[MAXDIR], fname[MAXFILENAME], ext[MAXEXT];
-	char* game_file_arg;
-	int ch;
+	char* game_file_arg = NULL;
 
 #if defined(GCC_UNIX) && defined(DO_COLOR)
+        int ch;
 	/* Parse comand line options (colour switches) */
 	while ((ch = getopt(argc, argv, "f:b:F:B:?h")) != -1) {
 	  switch (ch) {
-		case 'f':
-		  def_fcolor = atoi(optarg);
-		  break;
-		case 'b':
-		  def_bgcolor = atoi(optarg);
-		  break;
-		case 'F':
-		  def_slfcolor = atoi(optarg);
-		  break;
-		case 'B':
-		  def_slbgcolor = atoi(optarg);
-		  break;
-		case 'h':
-		case '?':
-		default:
-		  Banner();
-		  if (mem) hugo_blockfree(mem);
-		  mem = NULL;
-		  exit(0);
+	    case 'f':
+	      def_fcolor = atoi(optarg);
+	      break;
+	    case 'b':
+	      def_bgcolor = atoi(optarg);
+	      break;
+	    case 'F':
+	      def_slfcolor = atoi(optarg);
+	      break;
+	    case 'B':
+	      def_slbgcolor = atoi(optarg);
+	      break;
+	    case 'h':
+	    case '?':
+	    default:
+	      Banner();
+	      if (mem) hugo_blockfree(mem);
+	      mem = NULL;
+	      exit(0);
 	  }
 	}
 	if ( optind < argc ) {
@@ -1965,7 +1974,7 @@ void PromptMore(void)
 
 	/* Make sure we fit in a window */
 	if (physical_windowwidth/FIXEDCHARWIDTH >= 19)
-		hugo_print("	 [MORE...]	 ");
+		hugo_print("     [MORE...]     ");
 	else
 		hugo_print("[MORE...]");
 
@@ -1998,7 +2007,7 @@ void PromptMore(void)
 		hugo_setbackcolor(bgcolor);
 #endif
 
-	if (playback && k==27)		 /* if ESC is pressed during playback */
+	if (playback && k==27)         /* if ESC is pressed during playback */
 	{
 		if (fclose(playback))
 			FatalError(READ_E);
@@ -2012,11 +2021,11 @@ void PromptMore(void)
 	current_text_y = physical_windowbottom - lineheight;
 	/* Make sure we fit in a window */
 	if (physical_windowwidth/FIXEDCHARWIDTH >= 19)
-		hugo_print("					");
+		hugo_print("                    ");
 	else
-		hugo_print("		 ");
+		hugo_print("         ");
 #else
-	hugo_print("		 ");
+	hugo_print("         ");
 #endif
 	hugo_font(currentfont = tempcurrentfont);
 
@@ -2104,7 +2113,10 @@ int RecordCommands(void)
 
 				fref = glk_fileref_create_by_prompt(fileusage_InputRecord | fileusage_TextMode,
 					filemode_Read, 0);
-				playback = glk_stream_open_file(fref, filemode_Read, 0);
+				if (glk_fileref_does_file_exist(fref))
+				{
+					playback = glk_stream_open_file(fref, filemode_Read, 0);
+				}
 				glk_fileref_destroy(fref);
 				if (!playback)
 					return 0;
@@ -2122,13 +2134,13 @@ int RecordCommands(void)
 
 	Formats:
 
-	end of turn:	(0, undoturn, 0, 0, 0)
-	move obj.:	  (MOVE_T, obj., parent, 0, 0)
-	property:	   (PROP_T, obj., prop., # or PROP_ROUTINE, val.)
-	attribute:	  (ATTR_T, obj., attr., 0 or 1, 0)
-	variable:	   (VAR_T, var., value, 0, 0)
-	array:		  (ARRAYDATA_T, array addr., element, val., 0)
-	dict:		   (DICT_T, entry length, 0, 0, 0)
+	end of turn:    (0, undoturn, 0, 0, 0)
+	move obj.:      (MOVE_T, obj., parent, 0, 0)
+	property:       (PROP_T, obj., prop., # or PROP_ROUTINE, val.)
+	attribute:      (ATTR_T, obj., attr., 0 or 1, 0)
+	variable:       (VAR_T, var., value, 0, 0)
+	array:          (ARRAYDATA_T, array addr., element, val., 0)
+	dict:           (DICT_T, entry length, 0, 0, 0)
 	word setting:   (WORD_T, word number, new word, 0, 0)
 */
 
@@ -2138,7 +2150,7 @@ void SaveUndo(int a, int b, int c, int d, int e)
 
 	if (undorecord)
 	{
-		undostack[undoptr][0] = a;	  /* save the operation */
+		undostack[undoptr][0] = a;      /* save the operation */
 		undostack[undoptr][1] = b;
 		undostack[undoptr][2] = c;
 		undostack[undoptr][3] = d;
@@ -2152,7 +2164,7 @@ void SaveUndo(int a, int b, int c, int d, int e)
 		undostack[undoptr][1] = 0;
 		undoptr = tempptr;
 
-		if (++undoturn==MAXUNDO)		/* turn too complex */
+		if (++undoturn==MAXUNDO)        /* turn too complex */
 			{undoptr = 0;
 			undoturn = MAXUNDO;
 			undoinvalid = 1;}
@@ -2164,9 +2176,9 @@ void SaveUndo(int a, int b, int c, int d, int e)
 
 /* SETSTACKFRAME
 
-		Properly sets up the code_block structure for the current stack
-		depth depending on if this is a called block (RUNROUTINE_BLOCK)
-		or otherwise.
+        Properly sets up the code_block structure for the current stack
+        depth depending on if this is a called block (RUNROUTINE_BLOCK)
+        or otherwise.
 */
 
 void SetStackFrame(int depth, int type, long brk, long returnaddr)
@@ -2258,7 +2270,7 @@ char SpecialChar(char *a, int *i)
 
 	switch (r)
 	{
-		case '`':			   /* accent grave */
+		case '`':               /* accent grave */
 		{
 			/* Note that the "s = '...'" characters are
 			   Latin-1 and may not display properly under,
@@ -2268,166 +2280,166 @@ char SpecialChar(char *a, int *i)
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'a':  s = (char)0xe0; break; /* � */
-				case 'e':  s = (char)0xe8; break; /* � */
-				case 'i':  s = (char)0xec; break; /* � */
-				case 'o':  s = (char)0xf2; break; /* � */
-				case 'u':  s = (char)0xf9; break; /* � */
-				case 'A':  s = (char)0xc0; break; /* � */
-				case 'E':  s = (char)0xc8; break; /* � */
-				case 'I':  s = (char)0xcc; break; /* � */
-				case 'O':  s = (char)0xd2; break; /* � */
-				case 'U':  s = (char)0xd9; break; /* � */
+				case 'a':  s = (char)0xe0; break; /* à */
+				case 'e':  s = (char)0xe8; break; /* è */
+				case 'i':  s = (char)0xec; break; /* ì */
+				case 'o':  s = (char)0xf2; break; /* ò */
+				case 'u':  s = (char)0xf9; break; /* ù */
+				case 'A':  s = (char)0xc0; break; /* À */
+				case 'E':  s = (char)0xc8; break; /* È */
+				case 'I':  s = (char)0xcc; break; /* Ì */
+				case 'O':  s = (char)0xd2; break; /* Ò */
+				case 'U':  s = (char)0xd9; break; /* Ù */
 			}
 #endif
 			break;
 		}
-		case '\'':			  /* accent acute */
+		case '\'':              /* accent acute */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'a':  s = (char)0xe1; break; /* � */
-				case 'e':  s = (char)0xe9; break; /* � */
-				case 'i':  s = (char)0xed; break; /* � */
-				case 'o':  s = (char)0xf3; break; /* � */
-				case 'u':  s = (char)0xfa; break; /* � */
+				case 'a':  s = (char)0xe1; break; /* á */
+				case 'e':  s = (char)0xe9; break; /* é */
+				case 'i':  s = (char)0xed; break; /* í */
+				case 'o':  s = (char)0xf3; break; /* ó */
+				case 'u':  s = (char)0xfa; break; /* ú */
 				case 'y':  s = (char)0xfd; break;
-				case 'A':  s = (char)0xc1; break; /* � */
-				case 'E':  s = (char)0xc9; break; /* � */
-				case 'I':  s = (char)0xcd; break; /* � */
-				case 'O':  s = (char)0xd3; break; /* � */
-				case 'U':  s = (char)0xda; break; /* � */
-				case 'Y':  s = (char)0xdd; break; /* � */
+				case 'A':  s = (char)0xc1; break; /* Á */
+				case 'E':  s = (char)0xc9; break; /* É */
+				case 'I':  s = (char)0xcd; break; /* Í */
+				case 'O':  s = (char)0xd3; break; /* Ó */
+				case 'U':  s = (char)0xda; break; /* Ú */
+				case 'Y':  s = (char)0xdd; break; /* Ý */
 			}
 #endif
 			break;
 		}
-		case '~':			   /* tilde */
+		case '~':               /* tilde */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'a':  s = (char)0xe3; break; /* � */
-				case 'n':  s = (char)0xf1; break; /* � */
-				case 'o':  s = (char)0xf5; break; /* � */
-				case 'A':  s = (char)0xc3; break; /* � */
-				case 'N':  s = (char)0xd1; break; /* � */
-				case 'O':  s = (char)0xd5; break; /* � */
+				case 'a':  s = (char)0xe3; break; /* ã */
+				case 'n':  s = (char)0xf1; break; /* ñ */
+				case 'o':  s = (char)0xf5; break; /* õ */
+				case 'A':  s = (char)0xc3; break; /* Ã */
+				case 'N':  s = (char)0xd1; break; /* Ñ */
+				case 'O':  s = (char)0xd5; break; /* Õ */
 			}
 #endif
 			break;
 		}
-		case '^':			   /* circumflex */
+		case '^':               /* circumflex */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'a':  s = (char)0xe2; break; /* � */
-				case 'e':  s = (char)0xea; break; /* � */
-				case 'i':  s = (char)0xee; break; /* � */
-				case 'o':  s = (char)0xf4; break; /* � */
-				case 'u':  s = (char)0xfb; break; /* � */
-				case 'A':  s = (char)0xc2; break; /* � */
-				case 'E':  s = (char)0xca; break; /* � */
-				case 'I':  s = (char)0xce; break; /* � */
-				case 'O':  s = (char)0xd4; break; /* � */
-				case 'U':  s = (char)0xdb; break; /* � */
+				case 'a':  s = (char)0xe2; break; /* â */
+				case 'e':  s = (char)0xea; break; /* ê */
+				case 'i':  s = (char)0xee; break; /* î */
+				case 'o':  s = (char)0xf4; break; /* ô */
+				case 'u':  s = (char)0xfb; break; /* û */
+				case 'A':  s = (char)0xc2; break; /* Â */
+				case 'E':  s = (char)0xca; break; /* Ê */
+				case 'I':  s = (char)0xce; break; /* Î */
+				case 'O':  s = (char)0xd4; break; /* Ô */
+				case 'U':  s = (char)0xdb; break; /* Û */
 			}
 #endif
 			break;
 		}
-		case ':':			   /* umlaut */
+		case ':':               /* umlaut */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'a':  s = (char)0xe4; break; /* � */
-				case 'e':  s = (char)0xeb; break; /* � */
-				case 'i':  s = (char)0xef; break; /* � */
-				case 'o':  s = (char)0xf6; break; /* � */
-				case 'u':  s = (char)0xfc; break; /* � */
-				/* case 'y':  s = (char)0xff; break; */ /* � */
-				case 'A':  s = (char)0xc4; break; /* � */
-				case 'E':  s = (char)0xcb; break; /* � */
-				case 'I':  s = (char)0xcf; break; /* � */
-				case 'O':  s = (char)0xd6; break; /* � */
-				case 'U':  s = (char)0xdc; break; /* � */
+				case 'a':  s = (char)0xe4; break; /* ä */
+				case 'e':  s = (char)0xeb; break; /* ë */
+				case 'i':  s = (char)0xef; break; /* ï */
+				case 'o':  s = (char)0xf6; break; /* ö */
+				case 'u':  s = (char)0xfc; break; /* ü */
+				/* case 'y':  s = (char)0xff; break; */ /* ÿ */
+				case 'A':  s = (char)0xc4; break; /* Ä */
+				case 'E':  s = (char)0xcb; break; /* Ë */
+				case 'I':  s = (char)0xcf; break; /* Ï */
+				case 'O':  s = (char)0xd6; break; /* Ö */
+				case 'U':  s = (char)0xdc; break; /* Ü */
 			}
 #endif
 			break;
 		}
-		case ',':			   /* cedilla */
+		case ',':               /* cedilla */
 		{
 			s = a[++*i];
 #ifndef NO_LATIN1_CHARSET
 			switch (s)
 			{
-				case 'C':  s = (char)0xc7; break; /* � */
-				case 'c':  s = (char)0xe7; break; /* � */
+				case 'C':  s = (char)0xc7; break; /* Ç */
+				case 'c':  s = (char)0xe7; break; /* ç */
 			}
 #endif
 			break;
 		}
-		case '<':			   /* Spanish left quotation marks */
+		case '<':               /* Spanish left quotation marks */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xab; /* � */
+			s = (char)0xab; /* « */
 #endif
 			break;
-		case '>':			   /* Spanish right quotation marks */
+		case '>':               /* Spanish right quotation marks */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xbb; /* � */
+			s = (char)0xbb; /* » */
 			break;
 #endif
-		case '!':			   /* upside-down exclamation mark */
+		case '!':               /* upside-down exclamation mark */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xa1; /* � */
+			s = (char)0xa1; /* ¡ */
 #endif
 			break;
-		case '?':			   /* upside-down question mark */
+		case '?':               /* upside-down question mark */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xbf; /* � */
+			s = (char)0xbf; /* ¿ */
 #endif
 			break;
-		case 'a':			   /* ae ligature */
+		case 'a':               /* ae ligature */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xe6; ++*i; /* � */
+			s = (char)0xe6; ++*i; /* æ */
 #else
 			s = 'e'; ++*i;
 #endif
 			break;
-		case 'A':			   /* AE ligature */
+		case 'A':               /* AE ligature */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xc6; ++*i; /* � */
+			s = (char)0xc6; ++*i; /* Æ */
 #else
 			s = 'E'; ++*i;
 #endif
 			break;
-		case 'c':			   /* cents symbol */
+		case 'c':               /* cents symbol */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xa2; /* � */
+			s = (char)0xa2; /* ¢ */
 #endif
 			break;
-		case 'L':			   /* British pound */
+		case 'L':               /* British pound */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xa3; /* � */
+			s = (char)0xa3; /* £ */
 #endif
 			break;
-		case 'Y':			   /* Japanese Yen */
+		case 'Y':               /* Japanese Yen */
 #ifndef NO_LATIN1_CHARSET
-			s = (char)0xa5; /* � */
+			s = (char)0xa5; /* ¥ */
 #endif
 			break;
-		case '-':			   /* em dash */
+		case '-':               /* em dash */
 #ifndef NO_LATIN1_CHARSET
-			/* s = (char)0x97; */ /* � */
+			/* s = (char)0x97; */ /*  */
 #endif
 			break;
-		case '#':			   /* 3-digit decimal code */
+		case '#':               /* 3-digit decimal code */
 		{
 			s = (char)((a[++*i]-'0')*100);
 			s += (a[++*i]-'0')*10;
@@ -2469,7 +2481,7 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 		return tempfile;
 	}
 
-	hugo_splitpath(f, drive, dir, fname, ext);	  /* file to open */
+	hugo_splitpath(f, drive, dir, fname, ext);      /* file to open */
 
 	/* If the given filename doesn't already specify where to find it */
 	if (!strcmp(drive, "") && !strcmp(dir, ""))
@@ -2479,12 +2491,12 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 
 		if ((tempfile = HUGO_FOPEN(temppath, p)))
 		{
-			strcpy(f, temppath);	/* the new pathname */
+			strcpy(f, temppath);    /* the new pathname */
 			return tempfile;
 		}
 
 		/* Check environment variables */
-		strcpy(envvar, "hugo_");		/* the actual var. name */
+		strcpy(envvar, "hugo_");        /* the actual var. name */
 		strcat(envvar, d);
 
 		if (getenv(strupr(envvar)))
@@ -2499,7 +2511,7 @@ HUGO_FILE TrytoOpen(char *f, char *p, char *d)
 		}
 	}
 
-	return NULL;			/* return NULL if not openable */
+	return NULL;            /* return NULL if not openable */
 }
 
 #endif	/* GLK */
@@ -2676,9 +2688,10 @@ static int rand_index1, rand_index2;
 
 int random()
 {
-	rand_index1 = (rand_index1 + 1) % 55;
-	rand_index2 = (rand_index2 + 1) % 55;
-	rand_table[rand_index1] = rand_table[rand_index1] - rand_table[rand_index2];
+    rand_index1 = (rand_index1 + 1) % 55;
+    rand_index2 = (rand_index2 + 1) % 55;
+    rand_table[rand_index1] = rand_table[rand_index1] - rand_table[rand_index2];
+    return rand_table[rand_index1];
 }
 
 void srandom(int seed)
