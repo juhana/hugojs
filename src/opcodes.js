@@ -4,6 +4,7 @@
 
 import { addCallback } from "./haven/assets";
 import { get as getOption } from "./haven/options";
+import { syncfs } from "./haven/file";
 
 const OPCODE_CONTROL_FILE = "HrCtlAPI";
 const OPCODE_CHECK_FILE = "HrCheck";
@@ -14,7 +15,7 @@ const OPCODE_CHECK_FILE = "HrCheck";
  */
 export function init() {
     addCallback( function( done ) {
-        FS.syncfs( true, function() {
+        syncfs( true, function() {
             if( getOption( 'extra_opcodes' ) ) {
                 FS.writeFile(
                     OPCODE_CHECK_FILE,
@@ -35,7 +36,7 @@ export function init() {
             catch(e) {
             }
 
-            FS.syncfs( false, done );
+            syncfs( false, done );
         } );
     } );
 }
