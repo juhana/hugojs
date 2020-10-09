@@ -639,14 +639,8 @@ void hugo_print(char *a)
 	// printf(a);
 
 	EM_ASM_({
-	    if( $1 < 0 ) {
-            // manually fix Latin-1 encoding problems
-	        hugoui.print(String.fromCharCode(256 + $1), $2);
-	    }
-	    else {
-	        hugoui.print(AsciiToString($0), $2);
-	    }
-    }, a, a[0], inwindow );
+		hugoui.print(AsciiToString($0), $1);
+    }, a, inwindow);
 }
 
 void hugo_scrollwindowup()

@@ -78,13 +78,6 @@ CXXFLAGS+=-std=c++14
 CPPFLAGS:=$(CPPFLAGS) $(CFG_OPTIONS)
 
 EMSCRIPTENFLAGS:=-lidbfs.js -s NO_EXIT_RUNTIME=1 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]' -s 'ASYNCIFY_IMPORTS=["haven_getkey","haven_getline"]'
-ifeq ($(MAKECMDGOALS), he)
-    CPPFLAGS+=-DNO_LATIN1_CHARSET
-endif
-
-ifeq ($(MAKECMDGOALS), hd)
-    CPPFLAGS+=-DDEBUGGER -DFRONT_END -DNO_LATIN1_CHARSET
-endif
 
 # If you need a special include path to get the right curses header, specify
 # it.
