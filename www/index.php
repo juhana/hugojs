@@ -69,6 +69,13 @@
             "ifdb" => "6xbqnmlxvkju2n04"
         ),
         array(
+            "title" => "Enceladus",
+            "author" => "Robb Sherwin",
+            "file" => "enceladus",
+            "info" => "There's a werewolf loose on the HMCS Plagoo!",
+            "ifdb" => "lwqcpp5od2vmslg"
+        ),
+        array(
             "title" => "Guilty Bastards",
             "author" => "Kent Tessman",
             "file" => "guilty",
@@ -95,6 +102,13 @@
             "file" => "renga",
             "info" => "This is interactive poetry: you can type particular words that occur in the text, or words that are implied. You can be entirely experiential and use word-association. Keep in mind that what you type is much a part of the poem as the verse.",
             "ifdb" => "fxdvtfimtdlq9tsu"
+        ),
+        array(
+            "title" => "Spinning",
+            "author" => "Rob O'Hara",
+            "file" => "spinning",
+            "info" => "A Hugo Open House Mini-Comp Entry.",
+            "ifdb" => "7ajjwkqi54wcb1u"
         ),
         array(
             "title" => "Spur",
