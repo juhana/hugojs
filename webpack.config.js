@@ -1,5 +1,5 @@
 const path = require( "path" );
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
@@ -34,10 +34,12 @@ module.exports = {
         hints : false
     },
     plugins: [
-        new CleanWebpackPlugin([ "dist" ]),
-        new CopyWebpackPlugin([
-            { from: "assets/*", to: "play", flatten: true },
-            { from: "www/*", to: ".", flatten: true }
-        ])
+        new CleanWebpackPlugin(),
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: "**/*", to: "play", context: "assets/" },
+                { from: "**/*", to: ".", context: "www/" }
+            ]
+        })
     ]
 };
