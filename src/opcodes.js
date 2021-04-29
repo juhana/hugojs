@@ -16,29 +16,31 @@ const OPCODE_CHECK_FILE = "HrCheck";
 export function init() {
     addCallback( function( done ) {
         syncfs( true, function() {
-            if( getOption( 'extra_opcodes' ) ) {
+            if( getOption( "extra_opcodes" ) ) {
                 FS.writeFile(
                     OPCODE_CHECK_FILE,
-                    new Uint8Array([ 66, 66 ])   // == 16962
+                    new Uint8Array( [ 66, 66 ] )   // == 16962
                 );
             }
             else {
                 try {
                     FS.unlink( OPCODE_CHECK_FILE );
                 }
-                catch(e) {
+                catch( e ) {
+                    // do nothing
                 }
             }
 
             try {
                 FS.unlink( OPCODE_CONTROL_FILE );
             }
-            catch(e) {
+            catch( e ) {
+                    // do nothing
             }
 
             syncfs( false, done );
-        } );
-    } );
+        });
+    });
 }
 
 /**
@@ -46,7 +48,7 @@ export function init() {
  * execute the opcode, and write the response (if any).
  */
 export function process() {
-    if( !getOption( 'extra_opcodes' ) ) {
+    if( !getOption( "extra_opcodes" ) ) {
         return;
     }
 
@@ -94,18 +96,18 @@ export function process() {
             window.close();
 
             // quick-and-dirty abort by throwing an exception
-            throw new Error( 'Abort opcode called' );
+            throw new Error( "Abort opcode called" );
         },
 
         500: function() {   // OPEN_URL
             const url = Module.ccall(
-                'hugojs_get_dictionary_word',
-                'string',
-                [ 'int' ],
+                "hugojs_get_dictionary_word",
+                "string",
+                [ "int" ],
                 [ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ]
             );
 
-            if( confirm( 'Game wants to open web address ' + url + '. Continue?' ) ) {
+            if( confirm( "Game wants to open web address " + url + ". Continue?" ) ) {
                 window.open( url );
             }
         },

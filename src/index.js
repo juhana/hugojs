@@ -1,4 +1,4 @@
-import "./haven/bootstrap";
+import "./bootstrap";
 import * as ui from "./hugo";
 
 import "./css/hugo.css";

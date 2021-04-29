@@ -81,10 +81,10 @@ export const font = {
      * @param hugoWindow
      */
     set: function( f, hugoWindow ) {
-        setStyle( "bold", !!(f & 1), hugoWindow );
-        setStyle( "italic", !!(f & 2), hugoWindow );
-        setStyle( "underline", !!(f & 4), hugoWindow );
-        setStyle( "proportional", !!(f & 8), hugoWindow );
+        setStyle( "bold", !!( f & 1 ), hugoWindow );
+        setStyle( "italic", !!( f & 2 ), hugoWindow );
+        setStyle( "underline", !!( f & 4 ), hugoWindow );
+        setStyle( "proportional", !!( f & 8 ), hugoWindow );
         setStyle( "original", f, hugoWindow );
 
         // setStyle( flushedText, hugoWindow );
@@ -97,7 +97,7 @@ export const font = {
  */
 export function gameEnded() {
     // delete the autosave file
-    if( getOption( 'autosave' ) ) {
+    if( getOption( "autosave" ) ) {
         autosave.remove();
     }
 
@@ -105,14 +105,14 @@ export function gameEnded() {
     // A fatal error should block the redirection.
     // As a crude check for whether an error was thrown,
     // check if the error message div is present.
-    if( getOption( 'exit_url' ) && !document.getElementById( 'fatal-error' ) ) {
+    if( getOption( "exit_url" ) && !document.getElementById( "fatal-error" ) ) {
         // if any text is printed after previous input,
         // wait for keypress/click before redirecting
         if( getTextWasPrinted() ) {
-            setMode( 'endgame' );
+            setMode( "endgame" );
         }
         else {
-            window.location = getOption( 'exit_url' );
+            window.location = getOption( "exit_url" );
         }
     }
 }
@@ -122,8 +122,13 @@ export function gameEnded() {
  * Initialize HugoJS methods and start Haven
  */
 export function init() {
+    const options = window.hugojs_options || {};
+
     const ready = function() {
-        start( {
+        start({
+            // name the main container
+            container: "#hugo",
+
             // Hugo engine decides text and background colors
             engineColors: true,
 
@@ -136,21 +141,21 @@ export function init() {
             engineFontFamily: true,
 
             // user-provided options
-            options: hugojs_options,
+            options,
 
             // no Unicode support
             unicode: false,
 
             // the name of the story file in the virtual filesystem
-            virtualStoryfile: 'game.hex'
-        } );
+            virtualStoryfile: "game.hex"
+        });
 
         opcodes.init();
     };
 
     // let the user upload a game file unless one is already supplied
     // and it's not been explicitly disallowed
-    if( hugojs_options.allow_upload && !hugojs_options.lock_story && !getParameter( 'story' ) ) {
+    if( options.allow_upload && !options.lock_story && !getParameter( "story" ) ) {
         const uploadContainer = document.createElement( "div" );
         const header = document.createElement( "h2" );
         const fileUpload = document.createElement( "input" );
@@ -159,12 +164,12 @@ export function init() {
         header.textContent = "Upload Hugo story file (.hex)";
 
         fileUpload.type = "file";
-        fileUpload.addEventListener( "change", function( e ) {
-            setOption( 'uploadedFile', this.files[ 0 ] );
+        fileUpload.addEventListener( "change", function() {
+            setOption( "uploadedFile", this.files[ 0 ] );
             ready();
         });
 
-        document.getElementById( 'loader' ).style.display = "none";
+        document.getElementById( "loader" ).style.display = "none";
         uploadContainer.appendChild( header );
         uploadContainer.appendChild( fileUpload );
         document.body.appendChild( uploadContainer );
@@ -176,7 +181,7 @@ export function init() {
 }
 
 function removeLoader() {
-    const loader = document.getElementById( 'loader' );
+    const loader = document.getElementById( "loader" );
 
     if( loader ) {
         loader.parentNode.removeChild( loader );
@@ -212,7 +217,7 @@ export const position = {
  */
 export function print( text, hugoWindow ) {
     // \n is a carriage return, not needed in the browser environment
-    if( text === '\n' ) {
+    if( text === "\n" ) {
         return;
     }
 
@@ -235,9 +240,9 @@ export function sendWindowDimensions() {
     const dimensions = measureDimensions();
 
     Module.ccall(
-        'hugo_set_window_dimensions',
-        'null',
-        [ 'number', 'number', 'number', 'number', 'number', 'number' ],
+        "hugo_set_window_dimensions",
+        "null",
+        [ "number", "number", "number", "number", "number", "number" ],
         [
             dimensions.window.width,
             dimensions.window.height,
@@ -284,4 +289,4 @@ export function waitLine() {
 
 
 // Set Emscripten's command line arguments that load the story file
-window.Module.arguments = [ '/game.hex' ];
+Module.arguments = [ "/game.hex" ];
