@@ -1,40 +1,18 @@
-import { append as appendToBuffer } from "./haven/buffer";
+import { append as appendToBuffer, flush } from "./haven/buffer";
 import { start } from "./haven/haven";
-import { prompt } from "./haven/file";
-
-import {
-    getTextWasPrinted,
-    keypress,
-    setMode
-} from "./haven/input";
-
-import {
-    get as getOption,
-    getParameter,
-    set as setOption
-} from "./haven/options";
-
-import {
-    show as showPrompt,
-    waitLine as promptWaitLine
-} from "./haven/prompt";
-
-import {
-    autosave,
-    restoreUI as restoreHavenUI
-} from "./haven/state";
-
-import {
-    color as colors,
-    set as setStyle
-} from "./haven/style";
-
+import { getTextWasPrinted, keypress, setMode } from "./haven/input";
+import { get as getOption, getParameter, set as setOption } from "./haven/options";
+import { expectInput, setEngineInputFunction } from "./haven/prompt";
+import { autosave, restoreUI as restoreHavenUI } from "./haven/state";
+import { color as colors, set as setStyle } from "./haven/style";
 import {
     clear as clearWindow,
     measureDimensions,
     position as windowPosition,
     setTitle as setWindowTitle
 } from "./haven/window";
+
+import { loadStoryFile } from "./file";
 
 import * as _opcodes from "./opcodes";
 
@@ -69,7 +47,8 @@ export const color = {
  * Save/restore prompts
  */
 export function filePrompt( why ) {
-    return prompt( why );
+    appendToBuffer( `Enter filename to ${why}: ` );
+    flush();
 }
 
 
@@ -86,8 +65,6 @@ export const font = {
         setStyle( "underline", !!( f & 4 ), hugoWindow );
         setStyle( "proportional", !!( f & 8 ), hugoWindow );
         setStyle( "original", f, hugoWindow );
-
-        // setStyle( flushedText, hugoWindow );
     }
 };
 
@@ -140,8 +117,14 @@ export function init() {
             // (fixed width or proportional)
             engineFontFamily: true,
 
+            // story file loader
+            loadStoryFile,
+
             // user-provided options
             options,
+
+            // callback that starts the interpreter engine
+            startEngine: () => window._haven_start(),
 
             // no Unicode support
             unicode: false,
@@ -177,9 +160,12 @@ export function init() {
     else {
         ready();
     }
-
 }
 
+
+/**
+ * Removes the initial loader screen.
+ */
 function removeLoader() {
     const loader = document.getElementById( "loader" );
 
@@ -187,6 +173,7 @@ function removeLoader() {
         loader.parentNode.removeChild( loader );
     }
 }
+
 
 /**
  * Send the current window dimensions back to the engine.
@@ -234,7 +221,7 @@ export function restoreUI() {
 
 
 /**
- * Send the window dimensions to the engine (Hugo only)
+ * Send the window dimensions to the engine
  */
 export function sendWindowDimensions() {
     const dimensions = measureDimensions();
@@ -283,10 +270,9 @@ export function waitKeypressPromise() {
  * Starts waiting for line input
  */
 export function waitLine() {
-    showPrompt();
-    return promptWaitLine();
+    expectInput();
+
+    return new Promise( ( resolve ) => {
+        setEngineInputFunction( ( input ) => resolve( input + "\n" ) );     // Hugo expects a newline at the end of every command
+    });
 }
-
-
-// Set Emscripten's command line arguments that load the story file
-Module.arguments = [ "/game.hex" ];

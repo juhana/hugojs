@@ -8,10 +8,12 @@ module.exports = {
         "eslint:recommended"
     ],
     parserOptions: {
+        ecmaVersion: 8,
         sourceType: "module"
     },
     globals: {
         FS: "readonly",
+        IDBFS: "readonly",
         Module: "readonly"
     },
     rules: {
@@ -26,6 +28,7 @@ module.exports = {
             "switch": { "after": false },
             "while": { "after": false }
         } } ],
+        "no-control-regex": 0,
         "no-debugger": 0,
         "no-trailing-spaces": 1,
         "object-curly-spacing": [ 1, "always" ],

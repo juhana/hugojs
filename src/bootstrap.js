@@ -1,8 +1,10 @@
-import { finished } from "./haven/assets";
+import { expect, finished } from "./haven/assets";
 import error from "./haven/error";
 
+expect( "engine" );
+
 window.Module = {
-    arguments: [],
+    arguments: [ "/game.hex" ],
     preRun: [],
     postRun: [ function() { finished( "engine" ); } ],
     print: function( text ) {
