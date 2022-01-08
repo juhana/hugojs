@@ -4,7 +4,7 @@
 
 import { addCallback } from "./haven/assets";
 import { get as getOption } from "./haven/options";
-import { syncfs } from "./file";
+import { syncfs } from "./haven/file";
 
 const OPCODE_CONTROL_FILE = "HrCtlAPI";
 const OPCODE_CHECK_FILE = "HrCheck";

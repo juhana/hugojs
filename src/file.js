@@ -213,12 +213,3 @@ function writeGamefile() {
     });
 }
 
-
-/**
- * Synchronize virtual filesystem status with IndexedDB.
- * Called by the engine.
- */
-export function syncfs() {
-    FS.syncfs( false, function() {});
-}
-
