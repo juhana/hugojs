@@ -2,6 +2,7 @@ import "custom-event-polyfill";
 
 import { addCallback, finished } from "./haven/assets";
 import error from "./haven/error";
+import { syncfs } from "./haven/file";
 import { keypress } from "./haven/input";
 import { get } from "./haven/options";
 import { autosave } from "./haven/state";
@@ -199,7 +200,7 @@ function writeGamefile() {
 
     return new Promise( ( resolve ) => {
         // synchronize with local data
-        FS.syncfs( true, function() {
+        syncfs( true, function() {
             if( get( "autosave" ) ) {
                 autosave.setName( "/gamedata_" + checksum + "/autosave" );
                 autosave.restore();
