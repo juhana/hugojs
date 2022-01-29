@@ -32,5 +32,8 @@ module.exports = {
                 { from: "he.wasm", to: "play", context: "he/" }
             ]
         })
-    ]
+    ],
+    devServer: {
+        static: [ "assets", "library" ]
+    }
 };
