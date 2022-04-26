@@ -61,7 +61,7 @@ function fnv32( a ) {
             const reader = new FileReader();
 
             reader.onload = function( e ) {
-                const uploadContainer = document.getElementById( "uploadContainer" );
+                const uploadContainer = document.getElementById( "upload-container" );
 
                 if( uploadContainer ) {
                     uploadContainer.parentNode.removeChild( uploadContainer );

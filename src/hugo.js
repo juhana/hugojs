@@ -1,6 +1,6 @@
 import { append as appendToBuffer, flush } from "./haven/buffer";
 import { start } from "./haven/haven";
-import { getTextWasPrinted, keypress, setMode } from "./haven/input";
+import { getIsTextPrinted, keypress, setMode } from "./haven/input";
 import { get as getOption, getParameter, set as setOption } from "./haven/options";
 import { expectInput, setEngineInputFunction } from "./haven/prompt";
 import { autosave, restoreUI as restoreHavenUI } from "./haven/state";
@@ -85,7 +85,7 @@ export function gameEnded() {
     if( getOption( "exit_url" ) && !document.getElementById( "fatal-error" ) ) {
         // if any text is printed after previous input,
         // wait for keypress/click before redirecting
-        if( getTextWasPrinted() ) {
+        if( getIsTextPrinted() ) {
             setMode( "endgame" );
         }
         else {
@@ -143,7 +143,7 @@ export function init() {
         const header = document.createElement( "h2" );
         const fileUpload = document.createElement( "input" );
 
-        uploadContainer.id = "uploadContainer";
+        uploadContainer.id = "upload-container";
         header.textContent = "Upload Hugo story file (.hex)";
 
         fileUpload.type = "file";

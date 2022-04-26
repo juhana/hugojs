@@ -56,6 +56,10 @@ input {
     position: absolute;
 }
 
+#upload-container {
+    margin: 0 3rem;
+}
+
 #loader {
     position: fixed;
     top: 0;
