@@ -16,8 +16,8 @@ module.exports = {
         ]
     },
     output: {
-        filename: "play/hugo.js",
-        path: path.resolve( __dirname, "dist" )
+        filename: "hugo.js",
+        path: path.resolve( __dirname, "dist/play" )
     },
     performance: {
         hints: false
