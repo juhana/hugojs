@@ -33,4 +33,4 @@ window.hugojs_options = {
     windowing: true
 };
 
-hugoui.init();
+window.hugoui.init();

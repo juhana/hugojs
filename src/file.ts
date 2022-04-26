@@ -7,12 +7,12 @@ import { keypress } from "./haven/input";
 import { get } from "./haven/options";
 import { autosave } from "./haven/state";
 
-let interpreterLoaded = false;
+const interpreterLoaded = false;
 let isGamefileLoaded = false;
-let gamefile;
-let checksum;
-let datadir;
-let storyFilename;
+let gamefile: Uint8Array;
+let checksum: string;
+let datadir: string;
+let storyFilename: string;
 
 /**
  * FNV32-algorithm to calculate the story file's checksum.
@@ -20,7 +20,7 @@ let storyFilename;
  *
  * Taken from https://codepen.io/ImagineProgramming/post/checksum-algorithms-in-javascript-checksum-js-engine
  */
-function fnv32( a ) {
+const fnv32 = ( a: Uint8Array ): number => {
     const len = a.length;
     let fnv = 0;
 
@@ -29,13 +29,13 @@ function fnv32( a ) {
     }
 
     return fnv >>> 0;
-}
+};
 
 
 /**
  * Start loading the story file.
  */
- export function loadStoryFile( virtualFilename ) {
+export const loadStoryFile = ( virtualFilename: string ): Promise<number[]> => {
     return new Promise( ( resolve ) => {
         const gameUrl = get( "story" );
         const uploadedFile = get( "uploadedFile" );
@@ -45,7 +45,7 @@ function fnv32( a ) {
 
         storyFilename = virtualFilename;
 
-        const processStoryFile = function( file ) {
+        const processStoryFile = ( file: ArrayBuffer ): void => {
             isGamefileLoaded = true;
             gamefile = new Uint8Array( file );
             checksum = fnv32( gamefile ).toString( 16 );
@@ -60,14 +60,19 @@ function fnv32( a ) {
         if( uploadedFile ) {
             const reader = new FileReader();
 
-            reader.onload = function( e ) {
+            reader.onload = ( e ): void => {
                 const uploadContainer = document.getElementById( "upload-container" );
 
                 if( uploadContainer ) {
-                    uploadContainer.parentNode.removeChild( uploadContainer );
+                    uploadContainer.parentNode?.removeChild( uploadContainer );
                 }
 
-                processStoryFile( e.target.result );
+                if( !e.target?.result ) {
+                    error( "Error loading story file" );
+                    return;
+                }
+
+                processStoryFile( e.target.result as ArrayBuffer );
             };
 
             addCallback( writeGamefile );
@@ -95,7 +100,7 @@ function fnv32( a ) {
                 useProxy = false;
                 break;
 
-    //      case 'auto':
+                //      case 'auto':
             default:
                 // use proxy for CORS requests
                 useProxy = /^https?:\/\//.test( gameUrl ) && gameUrl.indexOf( window.location.protocol + "//" + window.location.host ) !== 0;
@@ -116,7 +121,7 @@ function fnv32( a ) {
 
         addCallback( writeGamefile );
 
-        xmlhttp.onreadystatechange = function() {
+        xmlhttp.onreadystatechange = (): void => {
             if( xmlhttp.readyState == XMLHttpRequest.DONE ) {
                 switch( xmlhttp.status ) {
                     case 200:
@@ -129,7 +134,7 @@ function fnv32( a ) {
 
                     case 415:
                         if( useProxy ) {
-                            error( String.fromCharCode.apply( null, new Uint8Array( xmlhttp.response ) ) );
+                            error( String.fromCharCode.apply( null, Array.from( new Uint8Array( xmlhttp.response ) ) ) );
                         }
                         else {
                             error( "Unsupported Media Type error encountered when loading game file" );
@@ -151,7 +156,7 @@ function fnv32( a ) {
         xmlhttp.responseType = "arraybuffer";
         xmlhttp.send();
     });
-}
+};
 
 
 /**
@@ -160,20 +165,24 @@ function fnv32( a ) {
  *
  * @returns {boolean} true when all required assets have finished loading
  */
-function writeGamefile() {
-    // re-show loader if hidden
-    document.getElementById( "loader" ).style.display = "block";
+const writeGamefile = (): Promise<void> => {
+    const { FS, IDBFS } = window;
 
-    if( !interpreterLoaded || !isGamefileLoaded ) {
-        if( !interpreterLoaded ) {
-            document.getElementById( "loader-message" ).innerHTML = "Loading interpreter";
-        }
-        else {
-            document.getElementById( "loader-message" ).innerHTML = "Loading game file";
-        }
+    // re-show loader if hidden
+    const loaderElement = document.getElementById( "loader" );
+    const loaderMessageElement = document.getElementById( "loader-message" );
+
+    if( loaderElement ) {
+        loaderElement.style.display = "block";
     }
 
-    document.getElementById( "loader-message" ).innerHTML = "Starting game";
+    if( loaderMessageElement ) {
+        if( ( !interpreterLoaded || !isGamefileLoaded ) ) {
+            loaderMessageElement.innerHTML = interpreterLoaded ? "Loading game file" : "Loading interpreter";
+        }
+
+        loaderMessageElement.innerHTML = "Starting game";
+    }
 
     FS.writeFile(
         storyFilename,
@@ -212,5 +221,5 @@ function writeGamefile() {
             resolve();
         });
     });
-}
+};
 

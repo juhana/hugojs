@@ -13,9 +13,11 @@ const OPCODE_CHECK_FILE = "HrCheck";
 /**
  * Save the virtual file that tells the game file we support extra opcodes.
  */
-export function init() {
-    addCallback( function( done ) {
+export const init = (): void => {
+    addCallback( function( done ): void {
         syncfs( true, function() {
+            const FS = window.FS;
+
             if( getOption( "extra_opcodes" ) ) {
                 FS.writeFile(
                     OPCODE_CHECK_FILE,
@@ -35,37 +37,38 @@ export function init() {
                 FS.unlink( OPCODE_CONTROL_FILE );
             }
             catch( e ) {
-                    // do nothing
+                // do nothing
             }
 
             syncfs( false, done );
         });
     });
-}
+};
 
 /**
  * The engine has written to the opcode file. See what's in it,
  * execute the opcode, and write the response (if any).
  */
-export function process() {
+export const process = (): void => {
     if( !getOption( "extra_opcodes" ) ) {
         return;
     }
 
+    const FS = window.FS;
     const opcodeData = FS.readFile( OPCODE_CONTROL_FILE );
     const paramcount = opcodeData.length / 2 - 1;
-    const response = [];
+    const response: number[] = [];
 
-    const addResponse = function( value ) {
+    const addResponse = ( value: number ): void => {
         response.push( value % 256 );
         response.push( value >> 8 );
     };
 
-    const readWord = function( index ) {
+    const readWord = ( index: number ): number => {
         return opcodeData[ index * 2 ] + opcodeData[ index * 2 + 1 ] * 256;
     };
 
-    const writeResponse = function() {
+    const writeResponse = (): void => {
         FS.writeFile( OPCODE_CONTROL_FILE, new Uint8Array( response ) );
     };
 
@@ -77,7 +80,7 @@ export function process() {
     }
 
     const opcodes = {
-        1: function() {     // IS_OPCODE_AVAILABLE
+        1: (): void => {     // IS_OPCODE_AVAILABLE
             if( opcodes[ readWord( 1 ) ] ) {
                 addResponse( 1 );
             }
@@ -86,11 +89,11 @@ export function process() {
             }
         },
 
-        200: function() {   // GET_OS
+        200: (): void => {   // GET_OS
             addResponse( 6 );   // 6 = Browser
         },
 
-        300: function() {   // ABORT
+        300: (): void => {   // ABORT
             // try to close the window – won't work unless the interpreter
             // window was programmatically opened by another page
             window.close();
@@ -99,36 +102,36 @@ export function process() {
             throw new Error( "Abort opcode called" );
         },
 
-        500: function() {   // OPEN_URL
-            const url = Module.ccall(
+        500: (): void => {   // OPEN_URL
+            const url = window.Module.ccall(
                 "hugojs_get_dictionary_word",
                 "string",
                 [ "int" ],
                 [ opcodeData[ 2 ] + opcodeData[ 3 ] * 256 ]
-            );
+            ) as string;
 
             if( confirm( "Game wants to open web address " + url + ". Continue?" ) ) {
                 window.open( url );
             }
         },
 
-        800: function() {   // IS_MUSIC_PLAYING
+        800: (): void => {   // IS_MUSIC_PLAYING
             addResponse( 0 );
         },
 
-        900: function() {   // IS_SAMPLE_PLAYING
+        900: (): void => {   // IS_SAMPLE_PLAYING
             addResponse( 0 );
         },
 
-        1000: function() {  // IS_FLUID_LAYOUT
+        1000: (): void => {  // IS_FLUID_LAYOUT
             addResponse( 1 );
         },
         /*
-         1100: function() {  // SET_COLOR
+         1100: (): void => {  // SET_COLOR
          hugoui.setCustomColor( opcodeData[ 2 ], opcodeData[ 4 ], opcodeData[ 6 ], opcodeData[ 8 ] );
          },
          */
-        1300: function() {  // HIDES_CURSOR
+        1300: (): void => {  // HIDES_CURSOR
             addResponse( 1 );
         }
     };
@@ -173,4 +176,4 @@ export function process() {
 
     // write the response to the control file
     writeResponse();
-}
+};

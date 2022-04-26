@@ -13,31 +13,26 @@ import {
 } from "./haven/window";
 
 import { loadStoryFile } from "./file";
-
 import * as _opcodes from "./opcodes";
+
+import type { HugoJsOptions } from "./index";
 
 export const opcodes = _opcodes;
 
 
 /**
  * Clear target window, or if omitted, the entire screen.
- *
- * @param hugoWindow
  */
-export function clear( hugoWindow ) {
+export const clear = ( hugoWindow: number ): void => {
     clearWindow( hugoWindow );
-}
+};
 
 
 export const color = {
     /**
      * Set colors in windows
-     *
-     * @param which
-     * @param newColor
-     * @param hugoWindow
      */
-    set: function( which, newColor, hugoWindow ) {
+    set: ( which: number, newColor: number, hugoWindow: number ): void => {
         colors.set( which, newColor, hugoWindow );
     }
 };
@@ -46,20 +41,17 @@ export const color = {
 /**
  * Save/restore prompts
  */
-export function filePrompt( why ) {
+export const filePrompt = ( why: "save" | "restore" ): void => {
     appendToBuffer( `Enter filename to ${why}: ` );
     flush();
-}
+};
 
 
 export const font = {
     /**
      * Set font styles
-     *
-     * @param f
-     * @param hugoWindow
      */
-    set: function( f, hugoWindow ) {
+    set: ( f: number, hugoWindow: number ): void => {
         setStyle( "bold", !!( f & 1 ), hugoWindow );
         setStyle( "italic", !!( f & 2 ), hugoWindow );
         setStyle( "underline", !!( f & 4 ), hugoWindow );
@@ -72,7 +64,7 @@ export const font = {
 /**
  * Called by the engine when the game has ended.
  */
-export function gameEnded() {
+export const gameEnded = (): void => {
     // delete the autosave file
     if( getOption( "autosave" ) ) {
         autosave.remove();
@@ -92,16 +84,27 @@ export function gameEnded() {
             window.location = getOption( "exit_url" );
         }
     }
-}
+};
 
 
 /**
  * Initialize HugoJS methods and start Haven
  */
-export function init() {
-    const options = window.hugojs_options || {};
+export const init = (): void => {
+    const options: HugoJsOptions = {
+        allow_upload: true,
+        autosave: true,
+        exit_url: false,
+        lock_options: false,
+        lock_story: false,
+        proxy_url: "https://proxy.iplayif.com/proxy/?url=%s",
+        story: "",
+        use_proxy: "auto",
+        windowing: true,
+        ...window.hugojs_options
+    };
 
-    const ready = function() {
+    const ready = (): void => {
         start({
             // name the main container
             container: "#hugo",
@@ -142,17 +145,23 @@ export function init() {
         const uploadContainer = document.createElement( "div" );
         const header = document.createElement( "h2" );
         const fileUpload = document.createElement( "input" );
+        const loaderElement = document.getElementById( "loader" );
 
         uploadContainer.id = "upload-container";
         header.textContent = "Upload Hugo story file (.hex)";
 
         fileUpload.type = "file";
         fileUpload.addEventListener( "change", function() {
-            setOption( "uploadedFile", this.files[ 0 ] );
-            ready();
+            if( Array.isArray( this.files ) && this.files.length > 0 ) {
+                setOption( "uploadedFile", this.files[ 0 ] );
+                ready();
+            }
         });
 
-        document.getElementById( "loader" ).style.display = "none";
+        if( loaderElement ) {
+            loaderElement.style.display = "none";
+        }
+
         uploadContainer.appendChild( header );
         uploadContainer.appendChild( fileUpload );
         document.body.appendChild( uploadContainer );
@@ -160,19 +169,19 @@ export function init() {
     else {
         ready();
     }
-}
+};
 
 
 /**
  * Removes the initial loader screen.
  */
-function removeLoader() {
+const removeLoader = (): void => {
     const loader = document.getElementById( "loader" );
 
     if( loader ) {
-        loader.parentNode.removeChild( loader );
+        loader.parentNode?.removeChild( loader );
     }
-}
+};
 
 
 /**
@@ -180,17 +189,17 @@ function removeLoader() {
  *
  * Called by the engine when it needs to init the display.
  */
-export function initScreen() {
+export const initScreen = (): void => {
     removeLoader();
     sendWindowDimensions();
-}
+};
 
 
 /**
  * Set the print cursor position.
  */
 export const position = {
-    set: function( column, line, hugoWindow ) {
+    set: ( column: number, line: number, hugoWindow: number ): void => {
         windowPosition.set( column, line, hugoWindow );
     }
 };
@@ -198,35 +207,32 @@ export const position = {
 
 /**
  * Print text.
- *
- * @param text
- * @param hugoWindow
  */
-export function print( text, hugoWindow ) {
+export const print = ( text: string, hugoWindow: number ): void => {
     // \n is a carriage return, not needed in the browser environment
     if( text === "\n" ) {
         return;
     }
 
     appendToBuffer( text, hugoWindow );
-}
+};
 
 
 /**
  * Reset UI state after restore
  */
-export function restoreUI() {
-    return restoreHavenUI();
-}
+export const restoreUI = (): void => {
+    restoreHavenUI();
+};
 
 
 /**
  * Send the window dimensions to the engine
  */
-export function sendWindowDimensions() {
+export const sendWindowDimensions = (): void => {
     const dimensions = measureDimensions();
 
-    Module.ccall(
+    window.Module.ccall(
         "hugo_set_window_dimensions",
         "null",
         [ "number", "number", "number", "number", "number", "number" ],
@@ -239,40 +245,40 @@ export function sendWindowDimensions() {
             dimensions.char.height
         ]
     );
-}
+};
 
 
 /**
  * Sets the window title. Called by the engine.
  */
-export function setTitle( title ) {
-    return setWindowTitle( title );
-}
+export const setTitle = ( title: string ): void => {
+    setWindowTitle( title );
+};
 
 
 /**
  * Starts waiting for a keypress
  */
-export function waitKeypress() {
-    return keypress.wait();
-}
+export const waitKeypress = (): void => {
+    keypress.wait();
+};
 
 
 /**
  * Returns a promise that resolves when the player presses a key
  */
-export function waitKeypressPromise() {
+export const waitKeypressPromise = (): void => {
     return keypress.waitPromise();
-}
+};
 
 
 /**
  * Starts waiting for line input
  */
-export function waitLine() {
+export const waitLine = (): Promise<string> => {
     expectInput();
 
     return new Promise( ( resolve ) => {
-        setEngineInputFunction( ( input ) => resolve( input + "\n" ) );     // Hugo expects a newline at the end of every command
+        setEngineInputFunction( ( input: string ) => resolve( input + "\n" ) );     // Hugo expects a newline at the end of every command
     });
-}
+};

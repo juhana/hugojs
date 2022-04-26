@@ -3,7 +3,7 @@ const { CleanWebpackPlugin } = require( "clean-webpack-plugin" );
 const CopyWebpackPlugin = require( "copy-webpack-plugin" );
 
 module.exports = {
-    entry: "./src/index.js",
+    entry: "./src/index.ts",
     module: {
         rules: [
             {
@@ -12,12 +12,20 @@ module.exports = {
                     "style-loader",
                     "css-loader"
                 ]
+            },
+            {
+                test: /\.ts$/,
+                use: "ts-loader",
+                exclude: /node_modules/
             }
         ]
     },
     output: {
         filename: "hugo.js",
         path: path.resolve( __dirname, "dist/play" )
+    },
+    resolve: {
+        extensions: [ ".ts", ".js" ]
     },
     performance: {
         hints: false
